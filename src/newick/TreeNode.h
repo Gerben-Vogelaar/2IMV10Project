@@ -11,7 +11,11 @@ struct TreeNode {
 	vector<TreeNode> descendant_list;
 	string branch_length;
 
-	Point3 position;
+
+	bool sticky = false;
+	int span;
+
+	Point3 position; //upperleft corner rectangle (used in spaceReclaimingIciclePlot.cpp)
 
 	void setPosition(Point3 newPos) {
 		position = newPos;

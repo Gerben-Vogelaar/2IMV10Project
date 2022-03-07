@@ -6,25 +6,45 @@
 #include<sstream>
 //#include "newick/newickParser.h"
 
+#include "shader/shader.h"
+
 #include "newick/newickTree.h"
 #include "iciclePlot/IciclePlot.h"
 #include "iciclePlot/SpaceReclaimingIciclePlot.h"
+
+void processInput(GLFWwindow* window);
 
 int main(void)
 {
     std::cout << "Hello" << std::endl;
 
     ifstream ifile;
-    //ifile.open("./resources/newickTrees/test.txt");
-    ifile.open("./resources/newickTrees/test.txt");
+    ifile.open("./resources/newickTrees/life.txt");
+    //ifile.open("./resources/newickTrees/life.txt");
+    //ifile.open("./resources/newickTrees/ani.newick.txt");
     stringstream buf;
     buf << ifile.rdbuf();
     string as(buf.str());    
     Newick newick = Newick(as);
 
     
-    //IciclePlot plot = IciclePlot(newick);
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(1.0f, 0.2f, 0.0f, 0.0f, newick);
+    SRIP1_arg args1;
+    args1.setGamma(0.2f);
+    args1.seth(0.1f);
+    args1.setRho(1.0f);
+    args1.setW(2.0f);
+
+    SRIP2_arg args2;
+    args2.setGamma(0.9f);
+    args2.seth(0.1f);
+    args2.setRho(1.0f);
+    args2.setW(2.0f);
+    args2.setEpsilon(2.0f);
+    args2.setSigma(0.5f);
+    args2.setLambda(20);
+
+    //IciclePlot SRIP1
+    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1);
 
     GLFWwindow* window;
 
@@ -50,6 +70,17 @@ int main(void)
 
     cout << "OpenGL version:  " << glGetString(GL_VERSION) << endl;
 
+    /* load shaders*/
+
+    Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderSRIP2.fs"); // you can name your shader files however you like
+
+    float vertices[] = {
+        // positions         // colors
+         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+    };
+
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -57,15 +88,25 @@ int main(void)
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     
+    //DELETE: for triangle drawing only
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
 
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //DRAWING the plot: number of elements * sizeof(float) and just the pointer to vertices
-    //glBufferData(GL_ARRAY_BUFFER, 18*sizeof(float), vertices2, GL_STATIC_DRAW);
 
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    //DRAWING the plot: number of elements * sizeof(float) and just the pointer to vertices
+
+    //DELETE: for triangle drawing only
+        // position attribute
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0);
+    //// color attribute
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    //glEnableVertexAttribArray(1);
+    //---------------
+
+
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -76,28 +117,12 @@ int main(void)
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
-    //-------------------------
-    ////Vertex Array Object, Vertex Buffer Object, Element Buffer Object
-    //unsigned int VAO, VBO, EBO;
-
-    //glGenVertexArrays(1, &VAO);
-
-    //glGenBuffers(1, &EBO);
-    //glGenBuffers(1, &VBO);
-
-    ////PROBABLY WRONG SINCE WE NEED indices dereferenced.
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-
-    ////bind the vertex array object first, then bind and set vertex buffer(s), and then configure bertex attribute(s).
-    //glBindVertexArray(VAO);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof())
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        processInput(window);
+
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -106,13 +131,17 @@ int main(void)
             glVertex2f(0.0f, 0.5f);
             glVertex2f(0.5f, -0.5f);
         glEnd();*/
-        
 
         //BACKGROUND
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        ourShader.use();
+
+        //ourShader.setFloat("height", args2.h);
+
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized - 84
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
 
         /* Swap front and back buffers */
@@ -122,6 +151,15 @@ int main(void)
         glfwPollEvents();
     }
 
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+
     glfwTerminate();
     return 0;
+}
+
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
