@@ -1,3 +1,7 @@
+#include"imgui.h"
+#include"imgui_impl_glfw.h"
+#include"imgui_impl_opengl3.h"
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -22,9 +26,13 @@ int main(void)
     string as(buf.str());    
     Newick newick = Newick(as);
 
+    float valueW = 1.0f;
+    float hValue = 0.2f;
+    glUseProgram(shaderProgram);
+    glUniform1f(glGetUniformLocation(shaderProgram, "hValue"), hValue);
     
     //IciclePlot plot = IciclePlot(newick);
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(1.0f, 0.2f, 0.0f, 0.0f, newick);
+    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(valueW, hValue, 0.0f, 0.0f, newick);
 
     GLFWwindow* window;
 
@@ -76,6 +84,15 @@ int main(void)
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
+
     //-------------------------
     ////Vertex Array Object, Vertex Buffer Object, Element Buffer Object
     //unsigned int VAO, VBO, EBO;
@@ -112,8 +129,23 @@ int main(void)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized - 84
         glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
+
+        ImGui::Begin("My name is window, ImGUI window");
+        ImGui::Text("Hello there advanturer!");
+        ImGui::SliderFloat("hValue", &hValue, 0.0f, valueW);
+        ImGui::End();
+
+        glUseProgram(shaderProgram);
+        glUniform1f(glGetUniformLocation(shaderProgram, "hValue"), hValue);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -121,6 +153,11 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
