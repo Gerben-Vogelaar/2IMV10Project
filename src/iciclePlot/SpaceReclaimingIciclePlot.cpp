@@ -91,52 +91,120 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_init(SRIP1_arg arg, Newick& tr
 	source.position = Point3(0.0f, arg.h, arg.W);
 
 	if (source.descendant_list.size() > 0) {
-		SRIP1Expirimental_r(1, vector<TreeNode>{source}, source.descendant_list.size(), arg.W, arg, vertexDataArray, index);
+		SRIP1Expirimental_r(1, vector<TreeNode>{source}, source.descendant_list.size(), arg.W, arg, vertexDataArray, index, 0);
 	}
 }
 
-void SpaceReclaimingIciclePlot::SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index)
+//void SpaceReclaimingIciclePlot::SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int pOffset)
+//{
+//	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
+//	float x = ((arg.W - w) / 2.0f); // -pOffset;
+//	float y = (d + 1.0f) * arg.h;
+//
+//	float finalOffset = 0.0f;
+//	float mpp = 0.0f;
+//
+//	float xp = (arg.W - w) / 2.0f;
+//
+//	//Calculate offset on each level 
+//	for (TreeNode p : P) {
+//		Point2 p0 = Point2(p.position.x, p.position.y);
+//
+//		for (TreeNode c : p.descendant_list) {
+//			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+//			float delta = U / m;
+//
+//			finalOffset += (p1.x - xp) + (p0.x - (xp + delta));
+//
+//			xp += delta + arg.gamma;
+//			p0 = p1;
+//			int n = c.descendant_list.size();
+//			if (n > 0) {
+//				mpp += n;
+//			}
+//		}
+//	}
+//
+//	finalOffset = finalOffset / (2 * mpp);
+//
+//	cout << finalOffset << endl;
+//
+//	//float finalOffset = (xOffset2 + xOffset) / (2 * mpp);
+//
+//	vector<TreeNode> Pp;
+//	float wp = 0.0f;
+//	float mp = 0.0f;
+//
+//	for (TreeNode& p : P) {
+//		Point2 p0 = Point2(p.position.x, p.position.y);
+//
+//		for (TreeNode& c : p.descendant_list) {
+//			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+//			float delta = U / m;
+//			/*drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta + finalOffset, y), Point2(x + finalOffset, y));*/
+//			
+//			drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta + finalOffset, y), Point2(x + finalOffset, y));
+//			//xOffset += p0.x - x;
+//			//xOffset2 += p1.x - (x + delta);
+//			c.setPosition(Point3(x + finalOffset, y, delta));
+//			x += delta + arg.gamma;
+//			p0 = p1;
+//			int n = c.descendant_list.size();
+//			if (n > 0) {
+//				Pp.push_back(c);
+//				wp += delta;
+//				mp += n;
+//			}
+//		}
+//	}
+//
+//	if (mp > 0) {
+//		SRIP1Expirimental_r(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset);
+//	}
+//}
+
+void SpaceReclaimingIciclePlot::SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset)
 {
 	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
-	float x = (arg.W - w) / 2.0f; //
+	float x = ((arg.W - w) / 2.0f); // -pOffset;
 	float y = (d + 1.0f) * arg.h;
 
-	vector<TreeNode> Pp;
-	float wp = 0.0f;
-	float mp = 0.0f;
-
-	int indexFirst = index;
-
-	float xOffset = 0.0f;
-	float xOffset2 = 0.0f;
-
-	float wpp = 0.0f;
+	float finalOffset = 0.0f;
 	float mpp = 0.0f;
 
-	float xp = (arg.W - w) / 2.0f; //
-	float yp = (d + 1.0f) * arg.h;
+	float xp = (arg.W - w) / 2.0f;
 
+	//Calculate offset on each level 
 	for (TreeNode p : P) {
 		Point2 p0 = Point2(p.position.x, p.position.y);
 
 		for (TreeNode c : p.descendant_list) {
 			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
 			float delta = U / m;
-			//drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y));
-			xOffset += p0.x - xp;
-			xOffset2 += p1.x - (xp + delta);
-			c.setPosition(Point3(xp, yp, delta));
+
+			finalOffset += (p1.x - xp) + (p0.x - (xp + delta));
+
 			xp += delta + arg.gamma;
 			p0 = p1;
 			int n = c.descendant_list.size();
 			if (n > 0) {
-				wpp += delta;
 				mpp += n;
 			}
 		}
 	}
 
-	float finalOffset = (xOffset2 - xOffset) / mpp;
+	finalOffset = finalOffset / (2 * mpp);
+
+	finalOffset += pOffset;
+	//finalOffset = (float)d / 10.0f;
+
+	cout << "final, p: " << finalOffset << " " << pOffset << endl;
+
+	//float finalOffset = (xOffset2 + xOffset) / (2 * mpp);
+
+	vector<TreeNode> Pp;
+	float wp = 0.0f;
+	float mp = 0.0f;
 
 	for (TreeNode& p : P) {
 		Point2 p0 = Point2(p.position.x, p.position.y);
@@ -144,10 +212,14 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_r(int d, vector<TreeNode> P, i
 		for (TreeNode& c : p.descendant_list) {
 			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
 			float delta = U / m;
-			drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta + finalOffset, y), Point2(x + finalOffset, y));
+			//drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y));
+			
+			//drawQuadrangle(vertexData, index, p0.add(Point2(finalOffset, 0.0f)) , p1.add(Point2(finalOffset, 0.0f)), Point2(x + delta, y).add(Point2(pOffset, 0.0f)), Point2(x, y).add(Point2(pOffset, 0.0f)));
+			
+			drawQuadrangle(vertexData, index, p0.add(Point2(pOffset, 0.0f)) , p1.add(Point2(pOffset, 0.0f)), Point2(x + delta, y).add(Point2(finalOffset, 0.0f)), Point2(x, y).add(Point2(finalOffset, 0.0f)));
 			//xOffset += p0.x - x;
 			//xOffset2 += p1.x - (x + delta);
-			c.setPosition(Point3(x + finalOffset, y, delta));
+			c.setPosition(Point3(x, y, delta));
 			x += delta + arg.gamma;
 			p0 = p1;
 			int n = c.descendant_list.size();
@@ -159,13 +231,10 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_r(int d, vector<TreeNode> P, i
 		}
 	}
 
-
-	
-
-	cout << "offsetLeft, offsetRight, difference: " << xOffset << " " << xOffset2 << " " << xOffset + xOffset2 << endl;
+	//cout << "final, p: " << finalOffset << " " << pOffset << endl;
 
 	if (mp > 0) {
-		SRIP1Expirimental_r(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index);
+		SRIP1Expirimental_r(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset);
 	}
 }
 

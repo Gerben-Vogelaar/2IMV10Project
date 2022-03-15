@@ -6,6 +6,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <fstream>
 #include<sstream>
 //#include "newick/newickParser.h"
@@ -17,11 +21,14 @@
 #include "iciclePlot/SpaceReclaimingIciclePlot.h"
 
 void processInput(GLFWwindow* window);
+void window_size_callback(GLFWwindow* window, int width, int height);
+void draw(unsigned int VAO, SpaceReclaimingIciclePlot plot);
+void draw2(unsigned int VAO, SpaceReclaimingIciclePlot plot);
+
+void processNewPlot(GLFWwindow* window, SpaceReclaimingIciclePlot& plot, float hValue, Newick tree, SRIP1_arg& args);
 
 int main(void)
 {
-    std::cout << "Hello" << std::endl;
-
     ifstream ifile;
     ifile.open("./resources/newickTrees/life.txt");
     //ifile.open("./resources/newickTrees/life.txt");
@@ -38,9 +45,9 @@ int main(void)
     */
 
     SRIP1_arg args1;
-    args1.setGamma(0.2f);
-    args1.seth(0.1f);
-    args1.setRho(1.0f);
+    args1.setGamma(0.02f);
+    args1.seth(0.085f);
+    args1.setRho(0.7f);
     args1.setW(2.0f);
 
     SRIP2_arg args2;
@@ -64,7 +71,6 @@ int main(void)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
-
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -162,42 +168,31 @@ int main(void)
     {
         processInput(window);
 
+        processNewPlot(window, plot, hValue, newick, args1);
+
+        glfwSetWindowSizeCallback(window, window_size_callback);
+
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        draw2(VAO, plot);
 
-        /*glBegin(GL_TRIANGLES);
-            glVertex2f(-0.5f, -0.5f);
-            glVertex2f(0.0f, 0.5f);
-            glVertex2f(0.5f, -0.5f);
-        glEnd();*/
-
-        //BACKGROUND
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-
+        ourShader.setFloat("colorIn", hValue);
         ourShader.use();
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, glm::vec3((hValue - 0.5) * 5, 0.0f, 0.0f));
+        transform = glm::rotate(transform, 3.14f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        ourShader.setMat4("transform", transform);
 
         //ourShader.setFloat("height", args2.h);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized - 84
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
-
         ImGui::Begin("My name is window, ImGUI window");
         ImGui::Text("Hello there advanturer!");
         ImGui::SliderFloat("hValue", &hValue, 0.0f, valueW);
         ImGui::End();
-
-        cout << hValue << endl;
-
-        //glUseProgram(shaderProgram);
-        //glUniform1f(glGetUniformLocation(shaderProgram, "hValue"), hValue);
-
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -211,7 +206,6 @@ int main(void)
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 
-
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -220,8 +214,56 @@ int main(void)
     return 0;
 }
 
+void draw(unsigned int VAO, SpaceReclaimingIciclePlot plot) {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    //BACKGROUND
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glBindVertexArray(VAO); 
+    glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); 
+}
+
+/* Contains the "old" code for reference*/
+void draw2(unsigned int VAO, SpaceReclaimingIciclePlot plot) {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    /*glBegin(GL_TRIANGLES);
+        glVertex2f(-0.5f, -0.5f);
+        glVertex2f(0.0f, 0.5f);
+        glVertex2f(0.5f, -0.5f);
+    glEnd();*/
+
+    //BACKGROUND
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized - 84
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
+}
+
+void window_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);    
+}
+
+void processNewPlot(GLFWwindow* window, SpaceReclaimingIciclePlot& plot, float hValue, Newick tree, SRIP1_arg& args) {
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+
+        cout << "pressed 1" << endl;
+
+        args.gamma = hValue;
+
+        plot = (SpaceReclaimingIciclePlot(tree, args));
+    }
 }

@@ -1,7 +1,7 @@
 #include "src/newick/NewickTree.h"
 #include "src/misc/Point2.h"
 #include "SRIParg.h"
-
+	
 class SpaceReclaimingIciclePlot {
 
 public:
@@ -28,7 +28,7 @@ private:
 	void SRIP1_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index);
 
 	void SRIP1Expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index);
-	void SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index);
+	void SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset);
 
 	void displaceQuadranglesX(const float x, float* vertexData, int sizeVertexData);
 	void displaceQuadranglesY(const float y, float* vertexData, int sizeVertexData);
