@@ -10,9 +10,9 @@ SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_a
 	//SRIP1_init(arg, newickTree, vertexDataArray, index);
 	SRIP1Expirimental_init(arg, newickTree, vertexDataArray, index);
 
-	displaceQuadranglesX(-1.0f, vertexDataArray, sizeVertexDataArray);
+	//displaceQuadranglesX(-1.0f, vertexDataArray, sizeVertexDataArray);
 
-	displaceQuadranglesY(-1.0f, vertexDataArray, sizeVertexDataArray);
+	//displaceQuadranglesY(-1.0f, vertexDataArray, sizeVertexDataArray);
 }
 
 SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg) {
