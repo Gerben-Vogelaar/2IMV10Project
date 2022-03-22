@@ -1,9 +1,11 @@
-#version 330 core
+#version 410 core
 layout (location = 0) in vec2 Pos;   // the position variable has attribute position 0
  
 uniform float colorIn;
 uniform mat4 transform;
 uniform mat2 rotateMatrix;
+
+uniform int rotatePlot;
 
 out vec3 ourColor; // output a color to the fragment shader
 
@@ -11,19 +13,21 @@ out vec3 ourColor; // output a color to the fragment shader
 
 void main()
 {
-    vec2 aPos = vec2(aPos.x - 1.0f, aPos.y);
+    //angle to translate
+    float r = -(Pos.x - 1.0f)  * PI; //1.05f
 
-    float rotation = (Pos.x) * PI;
-
-     mat2 rotate = 
+	mat2 rotate = 
      mat2(
-        cos(rotation), sin(rotation),   //First collumn 
-        -sin(rotation), cos(rotation));  //second collumn
+       cos(r), sin(r),   //First collumn 
+       -sin(r), cos(r));  //second collumn
 
-    //vec2 bPos = rotate * vec2(aPos.x - 1.0f, aPos.y);
-    vec2 bPos = rotate * vec2(aPos.x, aPos.y);
-    //vec2 bPos = vec2(sin(rotation), aPos.y * cos(rotation));
-    //vec2 bPos = vec2(sin(rotation), aPos.y * cos(rotation));
-    gl_Position = transform * vec4(bPos, 1.0, 1.0);
-    ourColor = vec3((aPos.y+1)/2, (aPos.y+1)/2, colorIn); // set ourColor to the input color we got from the vertex data
+    vec2 rPos = rotate * vec2(0, Pos.y);
+    //gl_Position = transform * vec4(rPos, 1.0, 1.0);
+    
+    if (rotatePlot == 0){
+        gl_Position = transform * vec4(rPos, 1.0, 1.0);
+    } else {
+      gl_Position = transform * vec4(Pos, 1.0, 1.0);
+    } 
+    ourColor = vec3(1.0f, 0.0f, colorIn); // set ourColor to the input color we got from the vertex data
 } 

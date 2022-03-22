@@ -15,10 +15,12 @@ public:
 		size += 12 * ((nrPointsLine / 2) - 1);
 		elements = new float[size];
 
-		float x = 0.0f;
+		float x = 0.0;
 
-		float width = maxWidth / nrPointsLine;
+		//float width = maxWidth / (float)nrPointsLine;
 		
+		float width = (float)maxWidth / (float)nrPointsLine;
+
 		int index = 0;
 
 		for (int i = 0; i < nrPointsLine - 1; i++) {
@@ -44,7 +46,7 @@ public:
 			x += width;
 		}
 
-		x = maxWidth / 4;
+		x = maxWidth / 4.0;
 
 		for (int i = 0; i < (nrPointsLine / 2) - 1; i++) {
 

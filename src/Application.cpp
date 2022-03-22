@@ -25,17 +25,31 @@
 
 #include "src/iciclePlot/TestingBezierCurverImpl.h"
 
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float deltaTime);
 void window_size_callback(GLFWwindow* window, int width, int height);
 void draw(unsigned int VAO, int sizeTest);
 void draw2(unsigned int VAO, SpaceReclaimingIciclePlot plot);
 
 void processNewPlot(GLFWwindow* window, SpaceReclaimingIciclePlot& plot, float hValue, Newick tree, SRIP1_arg& args);
 
+const float CAMERA_SPEED = 0.75f;
+
+bool rotatePlot = false;
+bool rasterize = false;
+
+float zoom = 1.0f;
+float up = 0.0f;
+float side = 0.0f;
+
+bool Pressed_KEY_1 = false;
+bool Pressed_KEY_2 = false;
+bool Pressed_KEY_MINUS = false;
+bool Pressed_KEY_EQUAL = false;
+
 int main(void)
 {
     ifstream ifile;
-    ifile.open("./resources/newickTrees/test.txt");
+    ifile.open("./resources/newickTrees/kmer_distance.newick.txt");
     //ifile.open("./resources/newickTrees/life.txt");
     //ifile.open("./resources/newickTrees/ani.newick.txt");
     stringstream buf;
@@ -49,27 +63,38 @@ int main(void)
     glUniform1f(glGetUniformLocation(shaderProgram, "hValue"), hValue);
     */
 
+    //SRIP1_arg args1;
+    //args1.setGamma(0.00f);
+    //args1.seth(0.04f);
+    //args1.setRho(0.0f);
+    //args1.setW(2.0f); 
+    
     SRIP1_arg args1;
     args1.setGamma(0.02f);
-    args1.seth(0.085f);
-    args1.setRho(0.7f);
+    args1.seth(0.04f);
+    args1.setRho(0.6f);
     args1.setW(2.0f);
 
     SRIP2_arg args2;
-    args2.setGamma(0.9f);
-    args2.seth(0.1f);
-    args2.setRho(1.0f);
+    args2.setGamma(0.1f);
+    args2.seth(0.085f);
+    args2.setRho(0.4f);
     args2.setW(2.0f);
     args2.setEpsilon(2.0f);
-    args2.setSigma(0.5f);
-    args2.setLambda(20);
+    args2.setSigma(1.0f);
+    args2.setLambda(30);
 
     //IciclePlot SRIP1
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1);
+    //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
+
+    cout << glfwGetTime() << endl;
+
+    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args2, false, 50);
+
+    cout << glfwGetTime() << endl;
 
     //IciclePlot plot = IciclePlot(newick);
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(valueW, hValue, 0.0f, 0.0f, newick);
-
 
     GLFWwindow* window;
 
@@ -122,10 +147,10 @@ int main(void)
     
     //DELETE: for triangle drawing only
     //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, test.size * sizeof(float), test.elements, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, test.size * sizeof(float), test.elements, GL_STATIC_DRAW);
     
     //TO DRAW OUR PLOT!
-    //glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
 
     //DRAWING the plot: number of elements * sizeof(float) and just the pointer to vertices
 
@@ -137,7 +162,6 @@ int main(void)
     //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     //glEnableVertexAttribArray(1);
     //---------------
-
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     
@@ -179,24 +203,32 @@ int main(void)
     //glBufferData(GL_ARRAY_BUFFER, sizeof())
 
     /* Loop until the user closes the window */
+    float time = glfwGetTime();
+
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
+
+        float deltaTime = time - glfwGetTime();
+        time = glfwGetTime();
+
+        processInput(window, deltaTime);
 
         //processNewPlot(window, plot, hValue, newick, args1);
 
         glfwSetWindowSizeCallback(window, window_size_callback);
 
-        ourShader.setFloat("colorIn", hValue);
+        
+        //ourShader.setFloat("colorIn", 0.0f);
         ourShader.use();
 
         /* Render here */
-        draw(VAO, test.size);
+        //draw(VAO, test.size);
 
-        //draw2(VAO, plot);
+        draw2(VAO, plot);
 
         glm::mat4 transform = glm::mat4(1.0f);
-        //transform = glm::translate(transform, glm::vec3((hValue-1) * 2, 0.0f, 0.0f));
+        transform = glm::translate(transform, glm::vec3(zoom * side, zoom * up, 0.0f));
+        transform = glm::scale(transform, glm::vec3(zoom, zoom, 1.0f));
         //transform = glm::rotate(transform, 3.14f, glm::vec3(0.0f, 0.0f, 1.0f));
 
         float rotation = 3.14f;
@@ -207,6 +239,10 @@ int main(void)
 
         rotate[1][0] = sin(rotation);
         rotate[1][1] = cos(rotation);*/
+
+        ourShader.setInt("rotatePlot", rotatePlot?1:0);
+
+        //cout << (hValue - 0.5f) * 2 << endl;
 
         ourShader.setMat4("transform", transform);
         ourShader.setMat2("rotateMatrix", rotate);
@@ -221,15 +257,15 @@ int main(void)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        //draw axis with ourShader2
-        ourShader2.use();
+//        draw axis with ourShader2
+        //ourShader2.use();
 
-        glBegin(GL_LINES);
-        glVertex2f(0, 1);
-        glVertex2f(0, -1);
-        glVertex2f(1, 0);
-        glVertex2f(-1, 0);
-        glEnd();
+        //glBegin(GL_LINES);
+        //glVertex2f(0, 1);
+        //glVertex2f(0, -1);
+        //glVertex2f(1, 0);
+        //glVertex2f(-1, 0);
+        //glEnd();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -279,25 +315,71 @@ void draw2(unsigned int VAO, SpaceReclaimingIciclePlot plot) {
         //glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawArrays(GL_TRIANGLES, 0, plot.getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
 
-    glBegin(GL_LINES);
-    glVertex2f(0, 1);
-    glVertex2f(0, -1);
-    glVertex2f(1, 0);
-    glVertex2f(-1,0);
-    glEnd();
+    //glBegin(GL_LINES);
+    //glVertex2f(0, 1);
+    //glVertex2f(0, -1);
+    //glVertex2f(1, 0);
+    //glVertex2f(-1,0);
+    //glEnd();
 }
 
 void window_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);    
+        glfwSetWindowShouldClose(window, true);
+
+    else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        up += deltaTime * CAMERA_SPEED;
+    }else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        up -= deltaTime* CAMERA_SPEED;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        side -= deltaTime * CAMERA_SPEED;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        side += deltaTime * CAMERA_SPEED;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS && !Pressed_KEY_MINUS) {
+        Pressed_KEY_MINUS = true;
+        zoom -= 0.1f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS && !Pressed_KEY_EQUAL) {
+        Pressed_KEY_EQUAL = true;
+        zoom += 0.1f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !Pressed_KEY_1) {
+        Pressed_KEY_1 = true;
+        rotatePlot = !rotatePlot;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !Pressed_KEY_2) {
+        Pressed_KEY_2 = true;
+        rasterize = !rasterize;
+
+        if (rasterize) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+    }
+    else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_RELEASE && Pressed_KEY_MINUS) {
+        Pressed_KEY_MINUS = false;
+    }else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_RELEASE && Pressed_KEY_EQUAL) {
+        Pressed_KEY_EQUAL = false;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE && Pressed_KEY_1) {
+        Pressed_KEY_1 = false;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE && Pressed_KEY_2) {
+        Pressed_KEY_2= false;
+    }
 }
 
 void processNewPlot(GLFWwindow* window, SpaceReclaimingIciclePlot& plot, float hValue, Newick tree, SRIP1_arg& args) {
@@ -307,6 +389,6 @@ void processNewPlot(GLFWwindow* window, SpaceReclaimingIciclePlot& plot, float h
 
         args.gamma = hValue;
 
-        plot = (SpaceReclaimingIciclePlot(tree, args));
+       // plot = (SpaceReclaimingIciclePlot(tree, args));
     }
 }
