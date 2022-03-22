@@ -2,9 +2,6 @@ project.vcxproj
 project.vcxproj.filters
 imgui.ini
 
-2IMV10_iciclePlot.vcxproj
-2IMV10_iciclePlot.vcxproj.filters
-
 # 2IMV10_iciclePlot/Dependencies/
 
 # Ignore Visual Studio temporary files, build results, and

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\newick\NewickTree.cpp" />
+    <ClCompile Include="src\iciclePlot\IciclePlot.cpp" />
+    <ClCompile Include="src\iciclePlot\SpaceReclaimingIciclePlot.cpp" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Dependencies\imgui\backend\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Dependencies\imgui\backend\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Dependencies\imgui\imgui.cpp" />
+    <ClCompile Include="Dependencies\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Dependencies\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Dependencies\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\utils\Camera.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\newick\NewickTree.h" />
+    <ClInclude Include="src\iciclePlot\IciclePlot.h" />
+    <ClInclude Include="src\newick\TreeNode.h" />
+    <ClInclude Include="src\iciclePlot\SpaceReclaimingIciclePlot.h" />
+    <ClInclude Include="src\misc\Point3.h" />
+    <ClInclude Include="src\misc\Point2.h" />
+    <ClInclude Include="src\iciclePlot\SRIParg.h" />
+    <ClInclude Include="src\shader\shader.h" />
+    <ClInclude Include="src\imgui\imconfig.h" />
+    <ClInclude Include="src\imgui\imgui.h" />
+    <ClInclude Include="src\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="src\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="src\imgui\imgui_internal.h" />
+    <ClInclude Include="src\imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\imgui\imstb_textedit.h" />
+    <ClInclude Include="src\imgui\imstb_truetype.h" />
+    <ClInclude Include="Dependencies\imgui\backend\imgui_impl_glfw.h" />
+    <ClInclude Include="Dependencies\imgui\backend\imgui_impl_opengl3.h" />
+    <ClInclude Include="Dependencies\imgui\imconfig.h" />
+    <ClInclude Include="Dependencies\imgui\imgui.h" />
+    <ClInclude Include="Dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="Dependencies\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Dependencies\imgui\imstb_textedit.h" />
+    <ClInclude Include="Dependencies\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\utils\Camera.h" />
+    <ClInclude Include="src\iciclePlot\TestingBezierCurverImpl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\newickTrees\ani.newick.txt" />
+    <Text Include="resources\newickTrees\core_snp_tree.newick.txt" />
+    <Text Include="resources\newickTrees\gene_distance.newick.txt" />
+    <Text Include="resources\newickTrees\kmer_distance.newick.txt" />
+    <Text Include="resources\newickTrees\life.txt" />
+    <Text Include="resources\newickTrees\mlsa.newick.txt" />
+    <Text Include="resources\newickTrees\test.txt" />
+    <Text Include="resources\newickTrees\test2.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="resources\shaderFiles\shaderTest.vs" />
+    <None Include="resources\shaderFiles\shaderTest.fs" />
+    <None Include="resources\shaderFiles\shaderSRIP2.fs" />
+    <None Include="resources\shaderFiles\shaderSRIP2.vs" />
+  </ItemGroup>
+</Project>
