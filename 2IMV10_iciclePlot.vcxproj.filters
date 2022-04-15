@@ -20,6 +20,9 @@
     <ClCompile Include="Dependencies\imgui\imgui_tables.cpp" />
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\utils\Camera.cpp" />
+    <ClCompile Include="src\utils\FreetypeWrapper.cpp" />
+    <ClCompile Include="src\shader\Shader.cpp" />
+    <ClCompile Include="src\utils\imGUIWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\newick\NewickTree.h" />
@@ -29,7 +32,7 @@
     <ClInclude Include="src\misc\Point3.h" />
     <ClInclude Include="src\misc\Point2.h" />
     <ClInclude Include="src\iciclePlot\SRIParg.h" />
-    <ClInclude Include="src\shader\shader.h" />
+    <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\imgui\imconfig.h" />
     <ClInclude Include="src\imgui\imgui.h" />
     <ClInclude Include="src\imgui\imgui_impl_glfw.h" />
@@ -49,6 +52,8 @@
     <ClInclude Include="Dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="src\utils\Camera.h" />
     <ClInclude Include="src\iciclePlot\TestingBezierCurverImpl.h" />
+    <ClInclude Include="src\utils\FreetypeWrapper.h" />
+    <ClInclude Include="src\utils\imGUIWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\newickTrees\ani.newick.txt" />
@@ -66,5 +71,11 @@
     <None Include="resources\shaderFiles\shaderTest.fs" />
     <None Include="resources\shaderFiles\shaderSRIP2.fs" />
     <None Include="resources\shaderFiles\shaderSRIP2.vs" />
+    <None Include="resources\shaderFiles\shaderColoringQuad.fs" />
+    <None Include="resources\shaderFiles\textShader.fs" />
+    <None Include="resources\shaderFiles\textShader.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\fonts\arial.ttf" />
   </ItemGroup>
 </Project>
