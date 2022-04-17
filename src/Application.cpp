@@ -94,7 +94,7 @@ int main(void)
 
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args2, false, 50);
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true);
+    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
 
     cout << glfwGetTime() << endl;
 
@@ -220,17 +220,26 @@ int main(void)
 
                 SRIP1_arg args = imGuiWrapper.getArgs1();
                 //plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
-                plot = SpaceReclaimingIciclePlot(newick, args, true);
+                plot = SpaceReclaimingIciclePlot(newick, args, false, QUAD_PRECISION);
                 glBindVertexArray(VAO);
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
                 
                 //draw2(VAO, &plot);
+            } else if (as == ALGORITHM_1_E) {
+                cout << "algorithm 1 - expirimental selected" << endl;
+
+                SRIP1_arg args = imGuiWrapper.getArgs1();
+                //plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
+                plot = SpaceReclaimingIciclePlot(newick, args, true, QUAD_PRECISION);
+                glBindVertexArray(VAO);
+                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
             }
             else if (as == ALGORITHM_2) {
                 SRIP2_arg args = imGuiWrapper.getArgs2();
-                //plot = SpaceReclaimingIciclePlot(newick, args2, false, QUAD_PRECISION);
-                plot = SpaceReclaimingIciclePlot(newick, args, true);
+                plot = SpaceReclaimingIciclePlot(newick, args, false, QUAD_PRECISION);
+
                 glBindVertexArray(VAO);
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);

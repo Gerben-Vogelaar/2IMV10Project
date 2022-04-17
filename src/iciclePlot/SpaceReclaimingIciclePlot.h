@@ -5,9 +5,9 @@
 class SpaceReclaimingIciclePlot {
 
 public:
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental);
+	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental);
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector);
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
+	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, int multVector);
 
 	/*
@@ -32,17 +32,24 @@ private:
 
 	void SRIP1_s_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP1_s_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
+
+	//algorithms below are actually used in the code :
 	
 	void SRIP1Expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index);
 	void SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset);
-
-	//quadrangle Draw
-	void SRIP1Expirimental_initQ(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1Expirimental_rQ(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
 	
-	//quadrangle - horizontal Draw
+	//quadrangle Draw ----------------------------
+
+	void SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
+	void SRIP1_rQ_h(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector);
+
 	void SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP1Expirimental_rQ_h(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
+
+	//----------------------------------------------
+	/*void SRIP1Expirimental_initQ(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
+	void SRIP1Expirimental_rQ(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);*/
+	//-----------------------------------------------
 
 
 	void SRIP1_s_expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
@@ -54,6 +61,9 @@ private:
 	//SRIP2_ methods:
 	void SRIP2_init(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP2_r(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
+
+	void SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
+	void SRIP2_rQ_h(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
 
 	float Weight(const vector<TreeNode> C);
 	float Weight(const TreeNode c);

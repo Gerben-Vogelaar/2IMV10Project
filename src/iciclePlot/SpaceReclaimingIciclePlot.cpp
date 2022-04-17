@@ -1,64 +1,68 @@
 #include "SpaceReclaimingIciclePlot.h"
 
-SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental) {
+//SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental) {
+//	if (expirimental) {
+//		int multVector = 50;
+//
+//		this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * (multVector);
+//		this->vertexDataArray = new float[sizeVertexDataArray];
+//
+//		cout << "nr vertex: " << sizeVertexDataArray << endl;
+//
+//		int index = 0;
+//
+//		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
+//		SRIP1Expirimental_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
+//	}
+//	else {
+//		int multVector = 50;
+//
+//		this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * (multVector - 1);
+//		this->vertexDataArray = new float[sizeVertexDataArray];
+//
+//		cout << "nr vertex: " << sizeVertexDataArray << endl;
+//
+//		int index = 0;
+//
+//		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
+//		SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
+//	}
+//}
+
+/* multVector specifies the additional amount of meshes per quadrangle*/
+SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector) {
+	this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * multVector;
+	this->vertexDataArray = new float[sizeVertexDataArray];
+
+	int index = 0;
+
 	if (expirimental) {
-		int multVector = 50;
-
-		this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * (multVector);
-		this->vertexDataArray = new float[sizeVertexDataArray];
-
-		cout << "nr vertex: " << sizeVertexDataArray << endl;
-
-		int index = 0;
-
 		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
 		SRIP1Expirimental_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
 	}
 	else {
-		int multVector = 50;
-
-		this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * (multVector - 1);
-		this->vertexDataArray = new float[sizeVertexDataArray];
-
-		cout << "nr vertex: " << sizeVertexDataArray << endl;
-
-		int index = 0;
-
-		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
-		SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
+		SRIP1_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
 	}
 }
 
-/* multVector specifies the additional amount of meshes per quadrangle*/
-SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector) {
-	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * (multVector - 1);
-	this->vertexDataArray = new float[sizeVertexDataArray];
-
-	int index = 0;
-
-	if (expirimental) {
-		SRIP1_s_expirimental_init(arg, newickTree, vertexDataArray, index, multVector);
-	}
-	else {
-		SRIP1_s_init(arg, newickTree, vertexDataArray, index, multVector);
-	}
-}
-
-SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental) {
-	SpaceReclaimingIciclePlot(newickTree, arg, expirimental, 1);
-}
+//SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental) {
+//	SpaceReclaimingIciclePlot(newickTree, arg, expirimental, 1);
+//}
 
 SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, int multVector) {
-	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * (multVector - 1);
+	this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * multVector;
 	this->vertexDataArray = new float[sizeVertexDataArray];
 
 	int index = 0;
 
 	if (expirimental) {
-		//SRIP2_experimental_init(arg, newickTree, vertexDataArray, index);
+		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
+
+		cout << "horizontal expirimental SRIP2 not implemented" << endl;
+
 	}
-	else {
-		SRIP2_init(arg, newickTree, vertexDataArray, index, multVector);
+	else {SRIP2_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
+		//SRIP1_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
 	}
 }
 
@@ -187,6 +191,53 @@ void SpaceReclaimingIciclePlot::SRIP1_s_r(int d, vector<TreeNode> P, int m, floa
 
 	if (mp > 0) {
 		SRIP1_s_r(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset, multVector);
+	}
+}
+
+void SpaceReclaimingIciclePlot::SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
+{
+	drawQuadrangleByQuadrangleHorizontal(vertexDataArray, index, Point2(0.0f, 0.0f), Point2(arg.W, 0.0f), Point2(arg.W, arg.h), Point2(0.0f, arg.h), multVector);
+
+	TreeNode source = tree.getSourceNode();
+
+	source.position = Point3(0.0f, arg.h, arg.W);
+
+	if (source.descendant_list.size() > 0) {
+		SRIP1_rQ_h(1, vector<TreeNode>{source}, source.descendant_list.size(), arg.W, arg, vertexDataArray, index, multVector);
+	}
+}
+
+void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector)
+{
+	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
+	float x = (arg.W - w) / 2.0f; //
+	float y = (d + 1.0f) * arg.h;
+
+	vector<TreeNode> Pp;
+	float wp = 0.0f;
+	float mp = 0.0f;
+
+	for (TreeNode& p : P) {
+		Point2 p0 = Point2(p.position.x, p.position.y);
+
+		for (TreeNode& c : p.descendant_list) {
+			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+			float delta = U / m;
+			drawQuadrangleByQuadrangleHorizontal(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y),multVector);
+			c.setPosition(Point3(x, y, delta));
+			x += delta + arg.gamma;
+			p0 = p1;
+			int n = c.descendant_list.size();
+			if (n > 0) {
+				Pp.push_back(c);
+				wp += delta;
+				mp += n;
+			}
+		}
+	}
+
+	if (mp > 0) {
+		SRIP1_rQ_h(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, multVector);
 	}
 }
 
@@ -376,6 +427,105 @@ void SpaceReclaimingIciclePlot::SRIP2_r(int d, vector<TreeNode> P, int m, float 
 	}
 	if (mp > 0) {
 		SRIP2_r(d + 1, Pp, mp, Ap, wp + arg.rho * (arg.W - wp), arg.sigma * gp, arg, vertexData, index, multVector);
+	}
+}
+
+void SpaceReclaimingIciclePlot::SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
+{
+	//compute weights
+//... TODO
+
+//offset
+	float o = (arg.W - arg.epsilon) / 2;
+
+	drawQuadrangleByQuadrangleHorizontal(vertexData, index, Point2(o, 0), Point2(arg.W - o, 0), Point2(arg.W - o, arg.h), Point2(o, arg.h), multVector);
+
+	TreeNode r = tree.getSourceNode();
+
+	r.setPosition(Point3(o, arg.h, arg.epsilon));
+
+	if (r.descendant_list.size() > 0) {
+		SRIP2_rQ_h(1, vector<TreeNode>{r}, r.descendant_list.size(), Weight(r.descendant_list), arg.W, 0, arg, vertexData, index, multVector);
+	}
+}
+
+void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector)
+{
+	float gammap = 0;
+
+	if (m > 1) {
+		float q = min(arg.gamma, floor((w - g - m) / (m - 1)));
+		gammap = 0 > q ? 0 : q;
+	}
+
+	//might go wrong due to rounding errors~!!!!!
+	if (gammap == 0 && g > w) {
+		w = g;
+	}
+
+	float U = w - g - (m - 1) * gammap;
+	float x = (arg.W - w) / 2;
+	float y = (d + 1) * arg.h;
+
+	vector<TreeNode> Pp;
+	float mp = 0.0f;
+	float Ap = 0.0f;
+	float wp = 0.0f;
+	float gp = 0.0f;
+
+	for (TreeNode& p : P) {
+		Point2 p0 = Point2(p.position.x, p.position.y);
+
+		vector<TreeNode> C;
+
+		if (p.sticky) {
+			C.push_back(p);
+		}
+		else {
+			for (TreeNode& pd : p.descendant_list) {
+				C.push_back(pd);
+			}
+		}
+
+		float delta = 0;
+		float o = 0;
+
+		Point2 p1 = Point2(0, 0);
+
+		for (TreeNode& c : C) {
+			if (c.sticky) {
+				p1 = p0.add(Point2(p.position.z, 0));
+				c.setPosition(Point3(x, y, arg.sigma * p.position.z));
+				x = x + c.position.z;
+				c.span += 1;
+			}
+			else {
+				p1 = p0.add(Point2(p.position.z, 0).scale(Weight(c) / Weight(C)));
+				delta = Weight(c) / A * U;
+				arg.sigma = min(delta, arg.epsilon);
+				o = (delta - arg.sigma) / 2;
+				drawQuadrangleByQuadrangleHorizontal(vertexData, index, p0, p1, Point2(x + o + arg.sigma, y), Point2(x + o, y), multVector);
+				c.setPosition(Point3(x + o, y, arg.sigma));
+				x = x + delta + gammap;
+			}
+			p0 = p1;
+			vector<TreeNode> Cp = c.descendant_list; //wrong because not references???
+			int n = c.descendant_list.size();
+			c.sticky = n == 0;
+			if (c.sticky && c.span < arg.lambda) {
+				Pp.push_back(c);
+				gp += c.position.z;
+			}
+			if (!c.sticky) {
+				Pp.push_back(c);
+				mp += n;
+				Ap += Weight(Cp);
+				wp += delta;
+			}
+		}
+	}
+	if (mp > 0) {
+		SRIP2_rQ_h(d + 1, Pp, mp, Ap, wp + arg.rho * (arg.W - wp), arg.sigma * gp, arg, vertexData, index, multVector);
 	}
 }
 
@@ -724,49 +874,83 @@ int SpaceReclaimingIciclePlot::getVertexDataArraySize() {
 
 // BELOW FOR TESTING PURPOSES!
 
-void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector) {
-	drawQuadrangleByQuadrangle(vertexDataArray, index, Point2(0.0f, 0.0f), Point2(arg.W, 0.0f), Point2(arg.W, arg.h), Point2(0.0f, arg.h), multVector);
-
-	TreeNode source = tree.getSourceNode();
-
-	source.position = Point3(0.0f, arg.h, arg.W);
-
-	if (source.descendant_list.size() > 0) {
-		SRIP1Expirimental_rQ(1, vector<TreeNode>{source}, source.descendant_list.size(), arg.W, arg, vertexDataArray, index, 0, multVector);
-	}
-}
-void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector) {
-	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
-	float x = (arg.W - w) / 2.0f;
-	float y = (d + 1.0f) * arg.h;
-
-	vector<TreeNode> Pp;
-	float wp = 0.0f;
-	float mp = 0.0f;
-
-	for (TreeNode& p : P) {
-		Point2 p0 = Point2(p.position.x, p.position.y);
-
-		for (TreeNode& c : p.descendant_list) {
-			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
-			float delta = U / m;
-			drawQuadrangleByQuadrangle(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y), multVector);
-			c.setPosition(Point3(x, y, delta));
-			x += delta + arg.gamma;
-			p0 = p1;
-			int n = c.descendant_list.size();
-			if (n > 0) {
-				Pp.push_back(c);
-				wp += delta;
-				mp += n;
-			}
-		}
-	}
-
-	if (mp > 0) {
-		SRIP1Expirimental_rQ(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, 1, multVector);
-	}
-}
+//void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector) {
+//	drawQuadrangleByQuadrangle(vertexDataArray, index, Point2(0.0f, 0.0f), Point2(arg.W, 0.0f), Point2(arg.W, arg.h), Point2(0.0f, arg.h), multVector);
+//
+//	TreeNode source = tree.getSourceNode();
+//
+//	source.position = Point3(0.0f, arg.h, arg.W);
+//
+//	if (source.descendant_list.size() > 0) {
+//		SRIP1Expirimental_rQ(1, vector<TreeNode>{source}, source.descendant_list.size(), arg.W, arg, vertexDataArray, index, 0, multVector);
+//	}
+//}
+//void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector) {
+//	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
+//	float x = ((arg.W - w) / 2.0f); // -pOffset;
+//	float y = (d + 1.0f) * arg.h;
+//
+//	float finalOffset = 0.0f;
+//	float mpp = 0.0f;
+//
+//	float xp = (arg.W - w) / 2.0f;
+//
+//	//Calculate offset on each level 
+//	for (TreeNode p : P) {
+//		Point2 p0 = Point2(p.position.x, p.position.y);
+//
+//		for (TreeNode c : p.descendant_list) {
+//			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+//			float delta = U / m;
+//
+//			finalOffset += (p1.x - xp) + (p0.x - (xp + delta));
+//
+//			xp += delta + arg.gamma;
+//			p0 = p1;
+//			int n = c.descendant_list.size();
+//			if (n > 0) {
+//				mpp += n;
+//			}
+//		}
+//	}
+//
+//	finalOffset = finalOffset / (2 * mpp);
+//
+//	finalOffset += pOffset;
+//
+//	vector<TreeNode> Pp;
+//	float wp = 0.0f;
+//	float mp = 0.0f;
+//
+//	for (TreeNode& p : P) {
+//		Point2 p0 = Point2(p.position.x, p.position.y);
+//
+//		for (TreeNode& c : p.descendant_list) {
+//			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+//			float delta = U / m;
+//			//drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y));
+//
+//			//drawQuadrangle(vertexData, index, p0.add(Point2(finalOffset, 0.0f)) , p1.add(Point2(finalOffset, 0.0f)), Point2(x + delta, y).add(Point2(pOffset, 0.0f)), Point2(x, y).add(Point2(pOffset, 0.0f)));
+//
+//			drawQuadrangleByQuadrangleHorizontal(vertexData, index, p0.add(Point2(pOffset, 0.0f)), p1.add(Point2(pOffset, 0.0f)), Point2(x + delta, y).add(Point2(finalOffset, 0.0f)), Point2(x, y).add(Point2(finalOffset, 0.0f)), multVector);
+//			//xOffset += p0.x - x;
+//			//xOffset2 += p1.x - (x + delta);
+//			c.setPosition(Point3(x, y, delta));
+//			x += delta + arg.gamma;
+//			p0 = p1;
+//			int n = c.descendant_list.size();
+//			if (n > 0) {
+//				Pp.push_back(c);
+//				wp += delta;
+//				mp += n;
+//			}
+//		}
+//	}
+//
+//	if (mp > 0) {
+//		SRIP1Expirimental_rQ(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset, multVector);
+//	}
+//}
 
 void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
 {
@@ -785,12 +969,40 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick&
 void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector)
 {
 	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
-	float x = (arg.W - w) / 2.0f;
+	float x = ((arg.W - w) / 2.0f); // -pOffset;
 	float y = (d + 1.0f) * arg.h;
+
+	float finalOffset = 0.0f;
+	int mpp = 0;
+
+	float xp = (arg.W - w) / 2.0f;
+
+	//Calculate offset on each level 
+	for (TreeNode p : P) {
+		Point2 p0 = Point2(p.position.x, p.position.y);
+
+		for (TreeNode c : p.descendant_list) {
+			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
+			float delta = U / m;
+
+			finalOffset += (p1.x - xp) + (p0.x - (xp + delta));
+
+			xp += delta + arg.gamma;
+			p0 = p1;
+			int n = c.descendant_list.size();
+			if (n > 0) {
+				mpp += n;
+			}
+		}
+	}
+
+	finalOffset = finalOffset / (2 * mpp);
+
+	finalOffset += pOffset;
 
 	vector<TreeNode> Pp;
 	float wp = 0.0f;
-	float mp = 0.0f;
+	int mp = 0;
 
 	for (TreeNode& p : P) {
 		Point2 p0 = Point2(p.position.x, p.position.y);
@@ -798,7 +1010,13 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode> P
 		for (TreeNode& c : p.descendant_list) {
 			Point2 p1 = p0.add(Point2(p.position.z, 0.0f).scale(1.0f / (p.descendant_list.size())));
 			float delta = U / m;
-			drawQuadrangleByQuadrangleHorizontal(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y), multVector);
+			//drawQuadrangle(vertexData, index, p0, p1, Point2(x + delta, y), Point2(x, y));
+
+			//drawQuadrangle(vertexData, index, p0.add(Point2(finalOffset, 0.0f)) , p1.add(Point2(finalOffset, 0.0f)), Point2(x + delta, y).add(Point2(pOffset, 0.0f)), Point2(x, y).add(Point2(pOffset, 0.0f)));
+
+			drawQuadrangleByQuadrangleHorizontal(vertexData, index, p0.add(Point2(pOffset, 0.0f)), p1.add(Point2(pOffset, 0.0f)), Point2(x + delta, y).add(Point2(finalOffset, 0.0f)), Point2(x, y).add(Point2(finalOffset, 0.0f)), multVector);
+			//xOffset += p0.x - x;
+			//xOffset2 += p1.x - (x + delta);
 			c.setPosition(Point3(x, y, delta));
 			x += delta + arg.gamma;
 			p0 = p1;
@@ -812,6 +1030,6 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode> P
 	}
 
 	if (mp > 0) {
-		SRIP1Expirimental_rQ_h(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, 1, multVector);
+		SRIP1Expirimental_rQ_h(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset, multVector);
 	}
 }

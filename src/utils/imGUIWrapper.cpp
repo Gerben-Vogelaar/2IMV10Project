@@ -29,7 +29,7 @@ void imGUIWrapper::renderInterface()
     ImGui::Text("");
     ImGui::Text("Set parameters:");
     //Dropdown 
-    const char* items[] = { "Algorithm 1", "Algorithm 2" };
+    const char* items[] = { "Algorithm 1", "Algorithm 1 Exp", "Algorithm 2" };
     static const char* current_item = "Select algorithm";
 
     if (ImGui::BeginCombo("##combo", current_item)) // The second parameter is the label previewed before opening the combo.
@@ -58,7 +58,7 @@ void imGUIWrapper::renderInterface()
 
         generateNewPlot = true;
 
-        if (current_item == "Algorithm 1") {
+        if (current_item == "Algorithm 1" || current_item == "Algorithm 1 Exp") {
             SRIP1_arg args1;
             args1.setGamma(valueGamma);
             args1.seth(hValue);
@@ -67,7 +67,12 @@ void imGUIWrapper::renderInterface()
 
             this->args1 = args1;
 
-            algorithmSelected = ALGORITHM_1;
+            if (current_item == "Algorithm 1") {
+                algorithmSelected = ALGORITHM_1;
+            }
+            else {
+                algorithmSelected = ALGORITHM_1_E;
+            }
         }
         else if (current_item == "Algorithm 2") {
             SRIP2_arg args2;
