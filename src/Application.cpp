@@ -33,7 +33,7 @@ void window_size_callback(GLFWwindow* window, int width, int height);
 void draw(unsigned int VAO, int sizeTest);
 void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* plot);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-void highlightSelectedNodes(bool& search, SpaceReclaimingIciclePlot& plot);
+void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot);
 
 int screen_width = 800;
 int screen_height = 600;
@@ -58,6 +58,9 @@ bool Pressed_KEY_EQUAL = false;
 double xpos_mouse, ypos_mouse;
 bool selectingNode = false;
 TreeNode* selectedNode = NULL;
+float data_selected[8  * QUAD_PRECISION];
+//float data_selected[8];
+string selectedNodeText;
 
 int main(void)
 {
@@ -76,7 +79,7 @@ int main(void)
 
     SRIP1_arg args1;
     args1.setGamma(0.014f);
-    args1.seth(0.085f);
+    args1.seth(0.1f);
     args1.setRho(0.4f);
     args1.setW(2.0f); 
 
@@ -131,11 +134,12 @@ int main(void)
     //Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderSRIP2.fs"); // you can name your shader files however you like
     //Shader ourShader2("resources/shaderFiles/shaderTest.vs", "resources/shaderFiles/shaderTest.fs"); // you can 
     Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderColoringQuad.fs");
+    Shader highlightShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderTest.fs");
     Shader shaderText("resources/shaderFiles/textShader.vs", "resources/shaderFiles/textShader.fs");
     
     FreetypeWrapper ft = FreetypeWrapper(shaderText);
 
-    unsigned int VBO, VAO, VBO_text, VAO_text;
+    unsigned int VBO, VAO, VBO_text, VAO_text, VBO_highlight, VAO_highlight;
 
     //Graph buffers
     glGenVertexArrays(1, &VAO);
@@ -160,6 +164,16 @@ int main(void)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glGenVertexArrays(1, &VAO_highlight);
+    glGenBuffers(1, &VBO_highlight);
+    glBindVertexArray(VAO_highlight);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_highlight);
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
     glBindVertexArray(0);
 
     /* Loop until the user closes the window */
@@ -208,7 +222,7 @@ int main(void)
         rotatePlot = imGuiWrapper.getRotate();
         rasterize = imGuiWrapper.getRasterize(); //FIX since it collides with the key input methods!
 
-        //highlightSelectedNodes(selectingNode, plot);
+        highlightSelectedNodes(selectingNode, rotatePlot, plot);
 
         if (rasterize) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -254,7 +268,24 @@ int main(void)
             }
         };
 
-        ft.RenderText(shaderText, "draw the text here", 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 1.0f), VAO_text, VBO_text);
+        ft.RenderText(shaderText, selectedNodeText, 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 0.9f), VAO_text, VBO_text);
+
+        if (selectedNode != NULL) {
+            highlightShader.use();
+            highlightShader.setInt("rotatePlot", rotatePlot ? 0 : 1);
+            /*highlightShader.setInt("totalVertex", plot.getVertexDataArraySize());
+            highlightShader.setInt("vertexPerQuad", QUAD_PRECISION);*/
+
+            highlightShader.setMat4("transform", transform);
+            highlightShader.setMat2("rotateMatrix", rotate);
+
+            glBindVertexArray(VAO_highlight);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO_highlight);
+            glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float) * QUAD_PRECISION, &data_selected, GL_STATIC_DRAW);
+
+            glDrawArrays(GL_QUADS, 0, 8*QUAD_PRECISION);
+        }
+
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -265,6 +296,9 @@ int main(void)
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+
+    glDeleteVertexArrays(1, &VAO_highlight);
+    glDeleteBuffers(1, &VBO_highlight);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -369,7 +403,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-void highlightSelectedNodes(bool& search, SpaceReclaimingIciclePlot& plot) {
+void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot) {
+    //selectingNode = false;
+    //selectedNode = NULL;
+    //selectedNodeText = "";
 
     //no new node was selected
     if (!search) {
@@ -377,25 +414,52 @@ void highlightSelectedNodes(bool& search, SpaceReclaimingIciclePlot& plot) {
     }
     else {
         glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(zoom * side, zoom * up, 0.0f));
+        transform = glm::translate(transform, glm::vec3(side, up, 0.0f));
         transform = glm::scale(transform, glm::vec3(1/zoom, 1/zoom, 1.0f));
-        glm::vec4 r = transform * glm::vec4(xpos_mouse, ypos_mouse, 1.0f, 1.0f);
+        //glm::vec4 r = transform * glm::vec4(xpos_mouse, ypos_mouse, 1.0f, 1.0f);
 
         //cout << xpos_mouse << " " << ypos_mouse << endl;
 
         //map 
-        float xpos_t = ((xpos_mouse - (screen_width / 2.0f))  / screen_width * 2.0f) - 1.0f;
+        float xpos_t = ((xpos_mouse - (screen_width / 2.0f))  / screen_width * 2.0f);
         float ypos_t = -(ypos_mouse - (screen_height/2.0f)) / screen_height * 2.0f;
 
         glm::vec4 trans = transform * glm::vec4(xpos_t, ypos_t, -1.0f, -1.0f);
 
-        cout << "normal point: (" << xpos_t << "," << ypos_t << ") transposed point: (" << trans.x << "," << trans.y << ")" << endl;
+        cout << "normal point: (" << xpos_t << "," << ypos_t << ") transposed point: (" << trans.x - 1.0f << "," << trans.y << ") - ";
+        cout << "zoom: (" << zoom << ") up, side( " << up << "," << side << ")" << endl;
 
         //cout << glm::to_string(transform) << endl;
 
-        TreeNode* selectedNode = plot.selectTreeNode(xpos_t, ypos_t);
+        // we do not trans.x - 1.0f since values in index range from 0-2 not -1 - 1.
+        TreeNode* node = plot.selectTreeNode(trans.x, trans.y);
 
-        if (selectedNode != NULL) { selectedNode->print(); };        
+        if (node != NULL) {
+            cout << "selected node succesfully:     ";
+            TreeNode n = (*node);
+            n.print();
+            selectingNode = true;
+            selectedNode = node;
+
+            int index = 0;
+            //plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, n.point1, n.point2, n.point3, n.point4, QUAD_PRECISION);
+            
+
+            //plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, Point2(n.point1.x, n.point1.y), Point2(n.point2.x, n.point2.y), Point2(n.point3.x, n.point3.y), Point2(n.point4.x, n.point4.y), QUAD_PRECISION);
+
+            plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, node->point1, node->point2, node->point3, node->point4, QUAD_PRECISION);
+
+            selectedNodeText = "selectedNode: " + n.root_label;
+            /*float data[] = {node->point1.x,  node->point1.y, node->point2.x,  node->point2.y, node->point3.x,  node->point3.y, node->point4.x,  node->point4.y, };
+
+            for (int i = 0; i < 8; i++) {
+                data_selected[i] = data[i];
+            }*/
+        }
+        else {
+            selectingNode = false;
+            selectedNode = NULL;
+        }
 
         search = false;
     }

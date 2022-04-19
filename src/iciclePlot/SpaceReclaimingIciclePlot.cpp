@@ -1091,3 +1091,162 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 		SRIP1Expirimental_rQ_h(d + 1, Pp, mp, wp + arg.rho * (arg.W - wp), arg, vertexData, index, finalOffset, multVector);
 	}
 }
+
+void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontalRef(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector) {
+	float topWidth = (p3.x - p4.x) / (multVector - 1);
+	float botWidth = (p2.x - p1.x) / (multVector - 1);
+
+	const float COMP_ERROR = 0.01f;
+
+	//1. determine order of points (we get 'new' p1,p2,p3,p4)
+
+	if (p1.x > p2.x) swap(&p1, &p2);
+	if (p3.x > p4.x) swap(&p3, &p4);
+	if (p1.x > p3.x) swap(&p1, &p3);
+	if (p2.x > p4.x) swap(&p2, &p4);
+	if (p2.x > p3.x) swap(&p2, &p3);
+
+	//2. det width each fig (triangle, quad, triangle)]
+
+	float p1p2_width = p2.x - p1.x;
+	float p2p3_width = p3.x - p2.x;
+	float p3p4_width = p4.x - p3.x;
+	float width_total = p4.x - p1.x;
+
+	int stepsT1 = multVector * (p1p2_width / width_total);
+	int stepsT3 = multVector * (p3p4_width / width_total);
+	int stepsT2 = multVector - stepsT1 - stepsT3;
+
+	//3. draw left-triangle p1, 
+
+	float slope1 = 0.0f;
+	float slope2 = 0.0f;
+
+	//cout << "POINT: (" << p1.x << "," << p1.y << ")" << endl;
+
+	//if (p1.x == p2.x) { // -> pick slope p1, p3
+	if (std::abs(p1.y - p2.y) < 0.001) { // -> pick slope p1, p3
+		slope1 = p1.sub(p3).y / p1.sub(p3).x; // check if scaling correct.
+	}
+	else { //p1.x == p3.x
+		slope1 = p1.sub(p2).y / p1.sub(p2).x; // check if scaling correct.
+	}
+
+	float incrX = p1p2_width / stepsT1;
+
+	//instantiate the values such that iff we have 0 steps, we have non null values.
+	float x = p1.x;
+	float y = p1.y;
+	float x2 = p1.x;
+	float y2 = p1.y;
+	float yflat = p2.y; //prev p2.y
+
+	for (int i = 0; i < stepsT1; i++) {
+		x = p1.x + incrX * i;
+		y = p1.y + incrX * i * slope1;
+		x2 = p1.x + incrX * (i + 1);
+		y2 = p1.y + incrX * (i + 1) * slope1;
+		yflat = p1.y;
+
+		vertexData[index++] = x;
+		vertexData[index++] = y;
+		vertexData[index++] = x2;
+		vertexData[index++] = y2;
+		vertexData[index++] = x2;
+		vertexData[index++] = yflat;
+		vertexData[index++] = x;
+		vertexData[index++] = yflat;
+	}
+
+	//to connect the rectangle -> start at (x, yflat) -> p1' and (x2,y2) -> p2'
+	Point2 p_1 = Point2(x2, yflat); //horizontal line
+	Point2 p_2 = Point2(x2, y2);	//sloped line
+
+	//3b. draw right-triangle
+
+	if (std::abs(p3.y - p4.y) < COMP_ERROR) { // -> pick slope p4, p2
+		slope2 = p2.sub(p4).y / p2.sub(p4).x; // check if scaling correct.
+	}
+	else { //p2.x == p4.x
+		slope2 = p3.sub(p4).y / p3.sub(p4).x; // check if scaling correct.
+	}
+
+	incrX = p3p4_width / stepsT3;
+
+	//instantiate the values such that iff we have 0 steps, we have non null values.
+	x = p4.x;
+	y = p4.y;
+	x2 = p4.x;
+	y2 = p4.y;
+	yflat = p3.y;
+
+	for (int i = 0; i < stepsT3; i++) {
+
+		x = p4.x - incrX * i;
+		y = p4.y - incrX * i * slope2;
+		x2 = p4.x - incrX * (i + 1);
+		y2 = p4.y - incrX * (i + 1) * slope2;
+		yflat = p4.y;
+
+		vertexData[index++] = x;
+		vertexData[index++] = y;
+		vertexData[index++] = x2;
+		vertexData[index++] = y2;
+		vertexData[index++] = x2;
+		vertexData[index++] = yflat;
+		vertexData[index++] = x;
+		vertexData[index++] = yflat;
+	}
+
+	Point2 p_3 = Point2(x2, yflat); //horizontal line
+	Point2 p_4 = Point2(x2, y2);	//sloped line
+
+	//swap p_1 and p_2 , p_3 and p_4 based on y value.
+
+	////4. draw quad p2, p3
+	float x_1 = p_2.x;
+	float y_1 = p_2.y;
+	float x2_1 = p_2.x;
+	float y2_1 = p_2.y;
+
+	float x_2 = p_1.x;
+	float y_2 = p_1.y;
+	float x2_2 = p_1.x;
+	float y2_2 = p_1.y;
+
+	//Sort such that p_1.y == p_4.y
+	if (p_1.y < p_2.y) {
+		swap(p_1, p_2);
+	}
+
+	if (p_3.y > p_4.y) {
+		swap(p_3, p_4);
+	}
+
+	slope1 = p_4.sub(p_1).y / p_4.sub(p_1).x;
+	slope2 = p_3.sub(p_2).y / p_3.sub(p_2).x;
+
+	incrX = p2p3_width / stepsT2;
+
+	for (int i = 0; i < stepsT2; i++) {
+
+		x_1 = p_1.x + incrX * i;
+		y_1 = p_1.y + incrX * i * slope1;
+		x2_1 = p_1.x + incrX * (i + 1);
+		y2_1 = p_1.y + incrX * (i + 1) * slope1;
+
+		x_2 = p_2.x + incrX * i;
+		y_2 = p_2.y + incrX * i * slope2;
+		x2_2 = p_2.x + incrX * (i + 1);
+		y2_2 = p_2.y + incrX * (i + 1) * slope2;
+
+		vertexData[index++] = x_1;
+		vertexData[index++] = y_1;
+		vertexData[index++] = x2_1;
+		vertexData[index++] = y2_1;
+		vertexData[index++] = x2_2;
+		vertexData[index++] = y2_2;
+		vertexData[index++] = x_2;
+		vertexData[index++] = y_2;
+	}
+}

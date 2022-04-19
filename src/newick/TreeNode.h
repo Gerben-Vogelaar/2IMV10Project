@@ -53,7 +53,8 @@ struct TreeNode {
 	}
 
 	void print() {
-		cout << point1.x << " " << point1.y << " " << point2.x << " " << point2.y << " " << point3.x << " " << point3.y << " " << point4.x << " " << point4.y << endl;
-		cout << root_label << " " << descendant_list.size() << " " << endl;
+		cout << "root label: (" << root_label << ") numer of descendants: (" << descendant_list.size() << ")" << endl;
+		cout << "	points: (" << point1.x << "," << point1.y << "),(" << point2.x << "," << point2.y << "),(" << point3.x << "," << point3.y << "),(" << point4.x << "," << point4.y << ")" << endl;
+		
 	}
 };

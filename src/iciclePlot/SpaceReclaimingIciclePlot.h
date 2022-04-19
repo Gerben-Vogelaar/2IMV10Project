@@ -15,6 +15,9 @@ public:
 	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, int multVector);
 
+	
+	void drawQuadrangleByQuadrangleHorizontalRef(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector);
+
 	/*
 	* W: width of diagram 
 	* h: height of a layer in the diagram
