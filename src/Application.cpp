@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "src/utils/FreetypeWrapper.h"
 
@@ -25,13 +26,17 @@
 #include "iciclePlot/IciclePlot.h"
 #include "iciclePlot/SpaceReclaimingIciclePlot.h"
 
-
 #include "src/utils/imGUIWrapper.h"
 
 void processInput(GLFWwindow* window, float deltaTime);
 void window_size_callback(GLFWwindow* window, int width, int height);
 void draw(unsigned int VAO, int sizeTest);
 void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* plot);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void highlightSelectedNodes(bool& search, SpaceReclaimingIciclePlot& plot);
+
+int screen_width = 800;
+int screen_height = 600;
 
 const int QUAD_PRECISION = 50;
 
@@ -49,13 +54,18 @@ bool Pressed_KEY_2 = false;
 bool Pressed_KEY_MINUS = false;
 bool Pressed_KEY_EQUAL = false;
 
+//contains x and y pos of the mouse after a click event
+double xpos_mouse, ypos_mouse;
+bool selectingNode = false;
+TreeNode* selectedNode = NULL;
+
 int main(void)
 {
     ifstream ifile;
-    //ifile.open("./resources/newickTrees/kmer_distance.newick.txt");
     ifile.open("./resources/newickTrees/life.txt");
-    //ifile.open("./resources/newickTrees/test2.txt");
-    //ifile.open("./resources/newickTrees/ani.newick.txt");
+    
+    //ifile.open("./resources/newickTrees/pepper_001.txt");
+    
     stringstream buf;
     buf << ifile.rdbuf();
     string as(buf.str());    
@@ -65,27 +75,19 @@ int main(void)
     float hValue = 0.2f;
 
     SRIP1_arg args1;
-    args1.setGamma(0.00f);
-    args1.seth(0.04f);
-    args1.setRho(0.3f);
-    args1.setW(1.0f); 
-    
-    //SRIP1_arg args1;
-    //args1.setGamma(0.02f);
-    //args1.seth(0.08f);
-    //args1.setRho(0.0f);
-    //args1.setW(2.0f);
+    args1.setGamma(0.014f);
+    args1.seth(0.085f);
+    args1.setRho(0.4f);
+    args1.setW(2.0f); 
 
     SRIP2_arg args2;
     args2.setGamma(0.1f);
     args2.seth(0.085f);
-    args2.setRho(0.4f);
+    args2.setRho(0.1f);
     args2.setW(2.0f);
     args2.setEpsilon(2.0f);
     args2.setSigma(1.0f);
     args2.setLambda(30);
-
-    
 
     //IciclePlot SRIP1
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
@@ -94,7 +96,7 @@ int main(void)
 
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args2, false, 50);
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
+    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
 
     cout << glfwGetTime() << endl;
 
@@ -105,7 +107,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(800, 600, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(screen_width, screen_height, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -121,6 +123,7 @@ int main(void)
 
     cout << "OpenGL version:  " << glGetString(GL_VERSION) << endl;
 
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     imGUIWrapper imGuiWrapper = imGUIWrapper(window);
 
     /* load shaders*/
@@ -129,7 +132,7 @@ int main(void)
     //Shader ourShader2("resources/shaderFiles/shaderTest.vs", "resources/shaderFiles/shaderTest.fs"); // you can 
     Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderColoringQuad.fs");
     Shader shaderText("resources/shaderFiles/textShader.vs", "resources/shaderFiles/textShader.fs");
-
+    
     FreetypeWrapper ft = FreetypeWrapper(shaderText);
 
     unsigned int VBO, VAO, VBO_text, VAO_text;
@@ -189,7 +192,7 @@ int main(void)
         rotate[1][0] = sin(rotation);
         rotate[1][1] = cos(rotation);*/
 
-        ourShader.setInt("rotatePlot", rotatePlot?1:0);
+        ourShader.setInt("rotatePlot", rotatePlot?0:1);
         ourShader.setInt("totalVertex", plot.getVertexDataArraySize());
         ourShader.setInt("vertexPerQuad", QUAD_PRECISION);
 
@@ -204,6 +207,8 @@ int main(void)
 
         rotatePlot = imGuiWrapper.getRotate();
         rasterize = imGuiWrapper.getRasterize(); //FIX since it collides with the key input methods!
+
+        //highlightSelectedNodes(selectingNode, plot);
 
         if (rasterize) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -227,8 +232,6 @@ int main(void)
                 
                 //draw2(VAO, &plot);
             } else if (as == ALGORITHM_1_E) {
-                cout << "algorithm 1 - expirimental selected" << endl;
-
                 SRIP1_arg args = imGuiWrapper.getArgs1();
                 //plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
                 plot = SpaceReclaimingIciclePlot(newick, args, true, QUAD_PRECISION);
@@ -251,7 +254,7 @@ int main(void)
             }
         };
 
-        ft.RenderText(shaderText, "draw the text here", 100.0f, 100.0f, 0.5f, glm::vec3(1.0f, 0.1f, 0.1f), VAO_text, VBO_text);
+        ft.RenderText(shaderText, "draw the text here", 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 1.0f), VAO_text, VBO_text);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -297,6 +300,9 @@ void draw(unsigned int VAO, int sizeTest) {
 
 void window_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+
+    screen_width = width;
+    screen_height = height;
 }
 
 void processInput(GLFWwindow* window, float deltaTime)
@@ -326,21 +332,21 @@ void processInput(GLFWwindow* window, float deltaTime)
         Pressed_KEY_EQUAL = true;
         zoom += 0.1f;
     }
-    else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !Pressed_KEY_1) {
-        Pressed_KEY_1 = true;
-        rotatePlot = !rotatePlot;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !Pressed_KEY_2) {
-        Pressed_KEY_2 = true;
-        rasterize = !rasterize;
+    //else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !Pressed_KEY_1) {
+    //    Pressed_KEY_1 = true;
+    //    rotatePlot = !rotatePlot;
+    //}
+    //else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !Pressed_KEY_2) {
+    //    Pressed_KEY_2 = true;
+    //    rasterize = !rasterize;
 
-        if (rasterize) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-    }
+    //    if (rasterize) {
+    //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //    }
+    //    else {
+    //        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //    }
+    //}
     /*else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_RELEASE && Pressed_KEY_MINUS) {
         Pressed_KEY_MINUS = false;
     }else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_RELEASE && Pressed_KEY_EQUAL) {
@@ -351,5 +357,46 @@ void processInput(GLFWwindow* window, float deltaTime)
     }
     else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE && Pressed_KEY_2) {
         Pressed_KEY_2= false;
+    }
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        glfwGetCursorPos(window, &xpos_mouse, &ypos_mouse);       
+
+        selectingNode = true;
+    }
+}
+
+void highlightSelectedNodes(bool& search, SpaceReclaimingIciclePlot& plot) {
+
+    //no new node was selected
+    if (!search) {
+        return;
+    }
+    else {
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, glm::vec3(zoom * side, zoom * up, 0.0f));
+        transform = glm::scale(transform, glm::vec3(1/zoom, 1/zoom, 1.0f));
+        glm::vec4 r = transform * glm::vec4(xpos_mouse, ypos_mouse, 1.0f, 1.0f);
+
+        //cout << xpos_mouse << " " << ypos_mouse << endl;
+
+        //map 
+        float xpos_t = ((xpos_mouse - (screen_width / 2.0f))  / screen_width * 2.0f) - 1.0f;
+        float ypos_t = -(ypos_mouse - (screen_height/2.0f)) / screen_height * 2.0f;
+
+        glm::vec4 trans = transform * glm::vec4(xpos_t, ypos_t, -1.0f, -1.0f);
+
+        cout << "normal point: (" << xpos_t << "," << ypos_t << ") transposed point: (" << trans.x << "," << trans.y << ")" << endl;
+
+        //cout << glm::to_string(transform) << endl;
+
+        TreeNode* selectedNode = plot.selectTreeNode(xpos_t, ypos_t);
+
+        if (selectedNode != NULL) { selectedNode->print(); };        
+
+        search = false;
     }
 }

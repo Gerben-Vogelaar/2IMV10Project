@@ -1,0 +1,9 @@
+Memory leak icicle plots -> create destructor.
+
+Additional algorithms.
+
+click and select node.
+	- checkValueInQuad() use dot product to determine if point is left of both lines (P1,P4) and (P2,P3)
+
+
+unify the different axis systems used in the program (e.g. newickTreeIndex, TreeNode etc).

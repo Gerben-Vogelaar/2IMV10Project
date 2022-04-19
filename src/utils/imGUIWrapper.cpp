@@ -30,7 +30,7 @@ void imGUIWrapper::renderInterface()
     ImGui::Text("Set parameters:");
     //Dropdown 
     const char* items[] = { "Algorithm 1", "Algorithm 1 Exp", "Algorithm 2" };
-    static const char* current_item = "Select algorithm";
+    static const char* current_item = "Algorithm 1";
 
     if (ImGui::BeginCombo("##combo", current_item)) // The second parameter is the label previewed before opening the combo.
     {
@@ -48,7 +48,7 @@ void imGUIWrapper::renderInterface()
     ImGui::Text("Parameters algorithm 1:");
     ImGui::SliderFloat("h", &hValue, 0.0f, 1.0f);
     ImGui::SliderFloat("W", &valueW, 0.0f, 2.0f);
-    ImGui::SliderFloat("Gamma", &valueGamma, 0.0f, 0.5f);
+    ImGui::SliderFloat("Gamma", &valueGamma, 0.0f, 0.2f);
     ImGui::SliderFloat("Rho", &valueRho, 0.0f, 1.0f);
     ImGui::Text("Extra parameters algorithm 2:");
     ImGui::SliderFloat("Epsilon", &valueEpsilon, 0.0f, valueW);

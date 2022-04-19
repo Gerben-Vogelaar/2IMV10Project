@@ -23,11 +23,11 @@
     <ClCompile Include="src\utils\FreetypeWrapper.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\utils\imGUIWrapper.cpp" />
+    <ClCompile Include="src\newick\NewickTreeIndex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\newick\NewickTree.h" />
     <ClInclude Include="src\iciclePlot\IciclePlot.h" />
-    <ClInclude Include="src\newick\TreeNode.h" />
     <ClInclude Include="src\iciclePlot\SpaceReclaimingIciclePlot.h" />
     <ClInclude Include="src\misc\Point3.h" />
     <ClInclude Include="src\misc\Point2.h" />
@@ -51,9 +51,10 @@
     <ClInclude Include="Dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="Dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="src\utils\Camera.h" />
-    <ClInclude Include="src\iciclePlot\TestingBezierCurverImpl.h" />
     <ClInclude Include="src\utils\FreetypeWrapper.h" />
     <ClInclude Include="src\utils\imGUIWrapper.h" />
+    <ClInclude Include="src\newick\TreeNode.h" />
+    <ClInclude Include="src\newick\NewickTreeIndex.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\newickTrees\ani.newick.txt" />
@@ -64,6 +65,7 @@
     <Text Include="resources\newickTrees\mlsa.newick.txt" />
     <Text Include="resources\newickTrees\test.txt" />
     <Text Include="resources\newickTrees\test2.txt" />
+    <Text Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
