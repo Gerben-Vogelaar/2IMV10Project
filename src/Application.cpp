@@ -35,6 +35,9 @@ void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* plot);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot);
 
+// FOR TESTING RUNTIME ONLY:
+void testSpeedAlgorithms(string path);
+
 int screen_width = 800;
 int screen_height = 600;
 
@@ -64,23 +67,30 @@ string selectedNodeText;
 
 int main(void)
 {
+    //testSpeedAlgorithms("./resources/newickTrees/ani.newick.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/core_snp_tree.newick.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/gene_distance.newick.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/kmer_distance.newick.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/life.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/mlsa.newick.txt");
+    //testSpeedAlgorithms("./resources/newickTrees/pepper_001.txt");
+
     ifstream ifile;
     ifile.open("./resources/newickTrees/life.txt");
-    
-    //ifile.open("./resources/newickTrees/pepper_001.txt");
     
     stringstream buf;
     buf << ifile.rdbuf();
     string as(buf.str());    
     Newick newick = Newick(as);
+    newick.printStatistics();
 
     float valueW = 1.0f;
     float hValue = 0.2f;
 
     SRIP1_arg args1;
-    args1.setGamma(0.014f);
-    args1.seth(0.1f);
-    args1.setRho(0.4f);
+    args1.setGamma(0.025f);
+    args1.seth(0.25f);
+    args1.setRho(0.8f);
     args1.setW(2.0f); 
 
     SRIP2_arg args2;
@@ -92,16 +102,11 @@ int main(void)
     args2.setSigma(1.0f);
     args2.setLambda(30);
 
-    //IciclePlot SRIP1
-    //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
 
-    cout << glfwGetTime() << endl;
-
-    //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args2, false, 50);
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
+
     SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
 
-    cout << glfwGetTime() << endl;
 
     GLFWwindow* window;
 
@@ -131,8 +136,6 @@ int main(void)
 
     /* load shaders*/
 
-    //Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderSRIP2.fs"); // you can name your shader files however you like
-    //Shader ourShader2("resources/shaderFiles/shaderTest.vs", "resources/shaderFiles/shaderTest.fs"); // you can 
     Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderColoringQuad.fs");
     Shader highlightShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderTest.fs");
     Shader shaderText("resources/shaderFiles/textShader.vs", "resources/shaderFiles/textShader.fs");
@@ -210,8 +213,6 @@ int main(void)
         ourShader.setInt("totalVertex", plot.getVertexDataArraySize());
         ourShader.setInt("vertexPerQuad", QUAD_PRECISION);
 
-        //cout << (hValue - 0.5f) * 2 << endl;
-
         ourShader.setMat4("transform", transform);
         ourShader.setMat2("rotateMatrix", rotate);
 
@@ -221,8 +222,6 @@ int main(void)
 
         rotatePlot = imGuiWrapper.getRotate();
         rasterize = imGuiWrapper.getRasterize(); //FIX since it collides with the key input methods!
-
-        highlightSelectedNodes(selectingNode, rotatePlot, plot);
 
         if (rasterize) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -268,13 +267,13 @@ int main(void)
             }
         };
 
+        highlightSelectedNodes(selectingNode, rotatePlot, plot);
+
         ft.RenderText(shaderText, selectedNodeText, 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 0.9f), VAO_text, VBO_text);
 
         if (selectedNode != NULL) {
             highlightShader.use();
             highlightShader.setInt("rotatePlot", rotatePlot ? 0 : 1);
-            /*highlightShader.setInt("totalVertex", plot.getVertexDataArraySize());
-            highlightShader.setInt("vertexPerQuad", QUAD_PRECISION);*/
 
             highlightShader.setMat4("transform", transform);
             highlightShader.setMat2("rotateMatrix", rotate);
@@ -316,8 +315,8 @@ void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* iciclePlot) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized - 84
-    glDrawArrays(GL_QUADS, 0, iciclePlot->getVertexDataArraySize()); // set the count to 6 since we're drawing 6 vertices now (2 triangles); not 3!
+    glBindVertexArray(VAO); 
+    glDrawArrays(GL_QUADS, 0, iciclePlot->getVertexDataArraySize()); 
 }
 
 void draw(unsigned int VAO, int sizeTest) {
@@ -360,6 +359,9 @@ void processInput(GLFWwindow* window, float deltaTime)
     }
     else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { // && !Pressed_KEY_MINUS) {
         Pressed_KEY_MINUS = true;
+        if (zoom <= 0.1f) {
+            return;
+        }
         zoom -= 0.1f;
     }
     else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { // && !Pressed_KEY_EQUAL) {
@@ -404,21 +406,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot) {
-    //selectingNode = false;
-    //selectedNode = NULL;
-    //selectedNodeText = "";
-
     //no new node was selected
     if (!search) {
         return;
     }
+
     else {
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::translate(transform, glm::vec3(side, up, 0.0f));
         transform = glm::scale(transform, glm::vec3(1/zoom, 1/zoom, 1.0f));
-        //glm::vec4 r = transform * glm::vec4(xpos_mouse, ypos_mouse, 1.0f, 1.0f);
-
-        //cout << xpos_mouse << " " << ypos_mouse << endl;
 
         //map 
         float xpos_t = ((xpos_mouse - (screen_width / 2.0f))  / screen_width * 2.0f);
@@ -426,13 +422,39 @@ void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIcicle
 
         glm::vec4 trans = transform * glm::vec4(xpos_t, ypos_t, -1.0f, -1.0f);
 
-        cout << "normal point: (" << xpos_t << "," << ypos_t << ") transposed point: (" << trans.x - 1.0f << "," << trans.y << ") - ";
-        cout << "zoom: (" << zoom << ") up, side( " << up << "," << side << ")" << endl;
+        //cout << "normal point: (" << xpos_t << "," << ypos_t << ") -> (" << trans.x << " - 1.0f," << trans.y << ") ";
+        //cout << "zoom: (" << zoom << ") up, side( " << up << "," << side << ")";
 
-        //cout << glm::to_string(transform) << endl;
+        float x_trans = trans.x;
+        float y_trans = trans.y;
+
+        if (rotatePlot) {
+
+            x_trans += 1.0f;
+
+            float y = std::sqrt(std::pow(trans.x, 2) + std::pow(trans.y, 2));
+
+            //cos-1 [ (a · b) / (|a| |b|) ]
+            float r = glm::dot(glm::vec2(0.0f, y), glm::vec2(trans.x, trans.y)) / (glm::length(glm::vec2(0.0f, y)) * glm::length(glm::vec2(trans.x, trans.y)));
+
+            float x = - std::acos(r) / 3.1415926538;
+
+            //cout << "x,y rotate " << x << " " << y <<  " r: " << r << endl;
+
+            if (trans.x >= 0.0f) {
+                x = -x;
+            }
+
+            x_trans = x + 1.0f; //we x_trans to points in -1, 1; but indexing requires these points to be in [0,2];
+            y_trans = y;
+
+           /* cout << "-> (" << x_trans << " " << y_trans << ") | zoom: (" << zoom << ") up, side(" << up << ", " << side << ")";*/
+        }
+        
+        cout << endl;
 
         // we do not trans.x - 1.0f since values in index range from 0-2 not -1 - 1.
-        TreeNode* node = plot.selectTreeNode(trans.x, trans.y);
+        TreeNode* node = plot.selectTreeNode(x_trans, y_trans);
 
         if (node != NULL) {
             cout << "selected node succesfully:     ";
@@ -442,25 +464,55 @@ void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIcicle
             selectedNode = node;
 
             int index = 0;
-            //plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, n.point1, n.point2, n.point3, n.point4, QUAD_PRECISION);
-            
-
-            //plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, Point2(n.point1.x, n.point1.y), Point2(n.point2.x, n.point2.y), Point2(n.point3.x, n.point3.y), Point2(n.point4.x, n.point4.y), QUAD_PRECISION);
 
             plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, node->point1, node->point2, node->point3, node->point4, QUAD_PRECISION);
 
             selectedNodeText = "selectedNode: " + n.root_label;
-            /*float data[] = {node->point1.x,  node->point1.y, node->point2.x,  node->point2.y, node->point3.x,  node->point3.y, node->point4.x,  node->point4.y, };
 
-            for (int i = 0; i < 8; i++) {
-                data_selected[i] = data[i];
-            }*/
-        }
+        } //NODE equals zero
         else {
-            selectingNode = false;
             selectedNode = NULL;
         }
-
-        search = false;
     }
+
+    selectingNode = false;
+}
+
+void testSpeedAlgorithms(string path) {
+    ifstream ifile;
+    ifile.open(path);
+
+    //ifile.open("./resources/newickTrees/pepper_001.txt");
+
+    stringstream buf;
+    buf << ifile.rdbuf();
+    string as(buf.str());
+    Newick newick = Newick(as);
+
+    newick.printStatistics();
+
+    float valueW = 1.0f;
+    float hValue = 0.2f;
+
+    SRIP1_arg args1;
+    args1.setGamma(0.1f);
+    args1.seth(0.1f);
+    args1.setRho(0.1f);
+    args1.setW(2.0f);
+
+    SRIP2_arg args2;
+    args2.setGamma(0.1f);
+    args2.seth(0.1f);
+    args2.setRho(0.1f);
+    args2.setW(2.0f);
+    args2.setEpsilon(2.0f);
+    args2.setSigma(1.0f);
+    args2.setLambda(30);
+
+    cout << "Algorithm 1,1-E, 2 respectivelly, file" << path << endl;
+
+    //Yes I do want that, it is just for testing bruv
+    SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
+    SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
+    SpaceReclaimingIciclePlot(newick, args2, false, QUAD_PRECISION);
 }

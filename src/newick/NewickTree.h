@@ -31,6 +31,7 @@ public:
 	TreeNode getSourceNode();
 
 	int getTreeSize();
+	void printStatistics();
 };
 
 

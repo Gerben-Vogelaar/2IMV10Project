@@ -46,6 +46,11 @@ int Newick::getTreeSize()
 	return this->treeSize;
 }
 
+void Newick::printStatistics()
+{
+	cout << "Tree size: " << getTreeSize() << " - Tree depth: " << getSourceNode().calculateDepth(1, getSourceNode()) << endl;
+}
+
 //tree ==> descendant_list [ root_label ] [ : branch_length ] ;
 void Newick::newickParseTree(char* newickTree, int& index, TreeNode& node) {
 	//1. parse descendant_list
