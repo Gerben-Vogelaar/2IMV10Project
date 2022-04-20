@@ -67,6 +67,8 @@ string selectedNodeText;
 
 int main(void)
 {
+    std::cout << "aswd -> move the screen coordinates \n - and + -> to zoom in and out" << endl;
+
     //testSpeedAlgorithms("./resources/newickTrees/ani.newick.txt");
     //testSpeedAlgorithms("./resources/newickTrees/core_snp_tree.newick.txt");
     //testSpeedAlgorithms("./resources/newickTrees/gene_distance.newick.txt");
@@ -76,6 +78,7 @@ int main(void)
     //testSpeedAlgorithms("./resources/newickTrees/pepper_001.txt");
 
     ifstream ifile;
+    //ifile.open("./resources/newickTrees/life.txt");
     ifile.open("./resources/newickTrees/life.txt");
     
     stringstream buf;
@@ -184,7 +187,6 @@ int main(void)
 
     while (!glfwWindowShouldClose(window))
     {
-
         float deltaTime = time - glfwGetTime();
         time = glfwGetTime();
 
