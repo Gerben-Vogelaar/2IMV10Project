@@ -520,15 +520,15 @@ void testSpeedAlgorithms(string path) {
 }
 
 //Gets mouse position on pressing
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        cout << "MOUSE PRESSED" << endl;
-    }
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-
-        cout << xpos << " " << ypos << endl;
-    }
-}
+//void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+//{
+//    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+//        cout << "MOUSE PRESSED" << endl;
+//    }
+//    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+//        double xpos, ypos;
+//        glfwGetCursorPos(window, &xpos, &ypos);
+//
+//        cout << xpos << " " << ypos << endl;
+//    }
+//}

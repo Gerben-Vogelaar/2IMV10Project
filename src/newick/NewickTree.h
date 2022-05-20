@@ -17,6 +17,8 @@ private:
 	TreeNode tree;
 	int treeSize; 
 
+	int depth;
+
 	//possible other things required for easy drawing later on
 
 	void newickParseTree(char* newickTree, int& index, TreeNode& node);

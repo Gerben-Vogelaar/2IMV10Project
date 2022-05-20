@@ -10,6 +10,8 @@
 Newick::Newick(string newickTree): treeSize(1) {
 	Parse(newickTree);
 
+	depth = 0;
+
 	computeDepth();
 }
 
