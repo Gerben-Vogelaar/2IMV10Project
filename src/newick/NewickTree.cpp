@@ -7,7 +7,7 @@
 
 #include "NewickTree.h"
 
-Newick::Newick(string newickTree): depth(0), treeSize(1) {
+Newick::Newick(string newickTree): treeSize(1) {
 	Parse(newickTree);
 
 	computeDepth();
@@ -35,7 +35,17 @@ void Newick::computeDepth()
 
 TreeNode Newick::getSourceNode()
 {
-	return this->tree;
+	return tree;
+}
+
+TreeNode& Newick::getSourceNodeRef()
+{
+	return tree;
+}
+
+TreeNode* Newick::getSourceNodePointer()
+{
+	return &tree;
 }
 
 int Newick::getTreeSize()
@@ -43,9 +53,9 @@ int Newick::getTreeSize()
 	return this->treeSize;
 }
 
-int Newick::getTreeMaxDepth()
+void Newick::printStatistics()
 {
-	return this->depth;
+	cout << "Tree size: " << getTreeSize() << " - Tree depth: " << getSourceNode().calculateDepth(1, getSourceNode()) << endl;
 }
 
 //tree ==> descendant_list [ root_label ] [ : branch_length ] ;

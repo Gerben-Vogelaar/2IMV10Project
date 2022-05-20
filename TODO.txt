@@ -1,0 +1,18 @@
+Additional algorithms.
+
+click and select node.
+	-fix bug that selecting sometimes doesn't work (I think there is a bug in the indexing or possibly the scaling breaks things)
+	
+	-implement the rotation selecting.
+
+
+unify the different axis systems used in the program (e.g. newickTreeIndex, TreeNode etc).
+
+Replace Point2 and Point3 with propper classes, preferably the glm::vec2 and glm::vec3
+
+Rewrite some application.cpp code (the selecting part)
+
+Replace the SpacereclaimingIciclePlot functions with reference functions, also; clean up the whole file.
+	-Memory leak icicle plots -> create destructor.
+
+Clean up application.cpp, more OOP

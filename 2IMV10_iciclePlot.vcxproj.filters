@@ -233,7 +233,6 @@
   <ItemGroup>
     <ClInclude Include="src\newick\NewickTree.h" />
     <ClInclude Include="src\iciclePlot\IciclePlot.h" />
-    <ClInclude Include="src\newick\TreeNode.h" />
     <ClInclude Include="src\iciclePlot\SpaceReclaimingIciclePlot.h" />
     <ClInclude Include="src\misc\Point3.h" />
     <ClInclude Include="src\misc\Point2.h" />
@@ -613,6 +612,7 @@
     <Text Include="resources\newickTrees\mlsa.newick.txt" />
     <Text Include="resources\newickTrees\test.txt" />
     <Text Include="resources\newickTrees\test2.txt" />
+    <Text Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

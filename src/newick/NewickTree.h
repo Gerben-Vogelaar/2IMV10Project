@@ -16,7 +16,7 @@ class Newick
 private: 
 	TreeNode tree;
 	int treeSize; 
-	int depth;
+
 	//possible other things required for easy drawing later on
 
 	void newickParseTree(char* newickTree, int& index, TreeNode& node);
@@ -28,10 +28,12 @@ private:
 
 public:	
 	Newick(string newickTree);
+	TreeNode* getSourceNodePointer();
+	TreeNode& getSourceNodeRef();
 	TreeNode getSourceNode();
 
 	int getTreeSize();
-	int getTreeMaxDepth();
+	void printStatistics();
 };
 
 

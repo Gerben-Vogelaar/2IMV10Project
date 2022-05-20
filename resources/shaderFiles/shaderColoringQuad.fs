@@ -20,6 +20,5 @@ void main()
 
     //FragColor = vec4(k, 0.5f, 0.5f, 1.0f);
     FragColor = vec4(rand(vec2(i,j)), 0.5f, 0.5f, 1.0f);
-
 }
 

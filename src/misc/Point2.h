@@ -4,6 +4,7 @@ struct Point2 {
 	float x;
 	float y;
 
+	Point2() : x(0), y(0) {};
 	Point2(float x, float y) : x(x), y(y) {};
 
 	Point2 add(Point2 p) {
@@ -18,7 +19,5 @@ struct Point2 {
 		return Point2(s * x, s * y);
 	}
 
-	void print() {
-		std::cout << "(" << x << "," << y << ")";
-	}
+
 };

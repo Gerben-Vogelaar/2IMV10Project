@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-enum AlgorithmSelected { ALGORITHM_1, ALGORITHM_2 };
+enum AlgorithmSelected { ALGORITHM_1, ALGORITHM_1_E, ALGORITHM_2 };
 
 class imGUIWrapper
 {

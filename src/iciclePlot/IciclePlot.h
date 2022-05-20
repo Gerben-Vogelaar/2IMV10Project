@@ -1,5 +1,8 @@
 #include "src/newick/NewickTree.h"
 
+/*
+* Depricated, should be adapted to the quad draw mechanism!
+*/
 class IciclePlot {
 
 private:
