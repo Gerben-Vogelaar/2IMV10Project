@@ -24,6 +24,8 @@ private:
 	void newickParseSubTree(char* newickTree, int& index, TreeNode& node);
 	void Parse(string newickTree);
 
+	void computeDepth();
+
 public:	
 	Newick(string newickTree);
 	TreeNode getSourceNode();

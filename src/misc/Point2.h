@@ -1,3 +1,5 @@
+/* to be refactured -> use glm::vec2 instead*/
+
 struct Point2 {
 	float x;
 	float y;

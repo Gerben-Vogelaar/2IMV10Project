@@ -5,6 +5,10 @@
 class SpaceReclaimingIciclePlot {
 
 public:
+	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool horizontal, int multVector);
+	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool horizontal, int multVector);
+
+
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental);
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector);
 	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
@@ -18,14 +22,16 @@ public:
 	* r: root of a hierarchy
 	*/
 	float* getVertexDataArray();
-
 	int getVertexDataArraySize();
 
 private:
 	float* vertexDataArray;
 	int sizeVertexDataArray;
 
-	//TODO: make the algorithms more modular, now most algorithms do the same with the exception of an small added code segment or a different vertex generation call.
+	/*	- The init function should be called first. (r stands for recursive)
+		- Expirimental = our "own" implementation of the srip algoirithm
+		- Q = Draw calls use the Quadrangle function <drawQuadrangleByQuadrangleHorizontal>
+	*/
 
 	void SRIP1_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index);
 	void SRIP1_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index);
@@ -44,7 +50,6 @@ private:
 	void SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP1Expirimental_rQ_h(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
 
-
 	void SRIP1_s_expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP1_s_expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector);
 
@@ -55,10 +60,21 @@ private:
 	void SRIP2_init(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP2_r(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
 
+	void SRIP2_init_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
+	void SRIP2_r_h(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
+	
 	float Weight(const vector<TreeNode> C);
 	float Weight(const TreeNode c);
 
-	//Util:
+	/* Drawing quadrangles multiple functions
+	* Triangle generates 2 triangles (6 floats in vertexData)
+	* Triangle with multVector generates 2 * multvector triangles
+	* 
+	* Quadrangle generates 1 QUAD (4 float)
+	* Quadrangle with multVecot generates multVector quads (from bottom to top base)
+	* Quadrangle with multVecot Horizontal generates multVector quads where the quads sides are all vertical.
+	* 
+	*/
 	void drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4);
 	void drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector);
 	void drawQuadrangleByQuadrangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4);

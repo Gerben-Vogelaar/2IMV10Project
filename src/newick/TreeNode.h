@@ -20,4 +20,16 @@ struct TreeNode {
 	void setPosition(Point3 newPos) {
 		position = newPos;
 	}
+
+	int computeDepth(int depth) {
+		int currentMax = depth;
+		for (TreeNode n : descendant_list) {
+			int dp = n.computeDepth(depth + 1);
+			if (dp > currentMax) {
+				currentMax = dp;
+			}
+		}
+
+		return currentMax;
+	}
 };

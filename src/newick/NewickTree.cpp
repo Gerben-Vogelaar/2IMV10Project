@@ -9,6 +9,8 @@
 
 Newick::Newick(string newickTree): depth(0), treeSize(1) {
 	Parse(newickTree);
+
+	computeDepth();
 }
 
 void Newick::Parse(string newickTree)
@@ -24,6 +26,11 @@ void Newick::Parse(string newickTree)
 
 	this->tree = source;
 	cout << "Parsed tree successfull" << endl;
+}
+
+void Newick::computeDepth()
+{
+	depth = tree.computeDepth(0);
 }
 
 TreeNode Newick::getSourceNode()

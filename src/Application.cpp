@@ -33,6 +33,8 @@ void window_size_callback(GLFWwindow* window, int width, int height);
 void draw(unsigned int VAO, int sizeTest);
 void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* plot);
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+
 const int QUAD_PRECISION = 50;
 
 const float CAMERA_SPEED = 0.75f;
@@ -53,7 +55,7 @@ int main(void)
 {
     ifstream ifile;
     //ifile.open("./resources/newickTrees/kmer_distance.newick.txt");
-    ifile.open("./resources/newickTrees/life.txt");
+    ifile.open("./resources/newickTrees/core_snp_tree.newick.txt");
     //ifile.open("./resources/newickTrees/test2.txt");
     //ifile.open("./resources/newickTrees/ani.newick.txt");
     stringstream buf;
@@ -84,8 +86,6 @@ int main(void)
     args2.setEpsilon(2.0f);
     args2.setSigma(1.0f);
     args2.setLambda(30);
-
-    
 
     //IciclePlot SRIP1
     //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
@@ -120,6 +120,8 @@ int main(void)
     }
 
     cout << "OpenGL version:  " << glGetString(GL_VERSION) << endl;
+
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     imGUIWrapper imGuiWrapper = imGUIWrapper(window);
 
@@ -230,7 +232,7 @@ int main(void)
             else if (as == ALGORITHM_2) {
                 SRIP2_arg args = imGuiWrapper.getArgs2();
                 //plot = SpaceReclaimingIciclePlot(newick, args2, false, QUAD_PRECISION);
-                plot = SpaceReclaimingIciclePlot(newick, args, true);
+                plot = SpaceReclaimingIciclePlot(newick, args, true, QUAD_PRECISION);
                 glBindVertexArray(VAO);
                 glBindBuffer(GL_ARRAY_BUFFER, VBO);
                 glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
@@ -342,5 +344,19 @@ void processInput(GLFWwindow* window, float deltaTime)
     }
     else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE && Pressed_KEY_2) {
         Pressed_KEY_2= false;
+    }
+}
+
+//Gets mouse position on pressing
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+        cout << "MOUSE PRESSED" << endl;
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        cout << xpos << " " << ypos << endl;
     }
 }
