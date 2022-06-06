@@ -1,534 +1,300 @@
-#pragma once
-
-#include"imgui.h"
-#include"imgui_impl_glfw.h"
-#include"imgui_impl_opengl3.h"
-
-#include <iostream>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
-
-#include "src/utils/FreetypeWrapper.h"
-
-#include <fstream>
-#include<sstream>
-
-#include <math.h>
-
-#include "shader/shader.h"
-
-#include "newick/newickTree.h"
-#include "iciclePlot/IciclePlot.h"
-#include "iciclePlot/SpaceReclaimingIciclePlot.h"
-
-#include "src/utils/imGUIWrapper.h"
-
-void processInput(GLFWwindow* window, float deltaTime);
-void window_size_callback(GLFWwindow* window, int width, int height);
-void draw(unsigned int VAO, int sizeTest);
-void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* plot);
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot);
-
-// FOR TESTING RUNTIME ONLY:
-void testSpeedAlgorithms(string path);
-
-int screen_width = 800;
-int screen_height = 600;
-
-const int QUAD_PRECISION = 50;
-
-const float CAMERA_SPEED = 0.75f;
-
-bool rotatePlot = false;
-bool rasterize = false;
-
-float zoom = 1.0f;
-float up = 0.0f;
-float side = 0.0f;
-
-bool Pressed_KEY_1 = false;
-bool Pressed_KEY_2 = false;
-bool Pressed_KEY_MINUS = false;
-bool Pressed_KEY_EQUAL = false;
-
-//contains x and y pos of the mouse after a click event
-double xpos_mouse, ypos_mouse;
-bool selectingNode = false;
-TreeNode* selectedNode = NULL;
-float data_selected[8  * QUAD_PRECISION];
-//float data_selected[8];
-string selectedNodeText;
-
-int main(void)
-{
-    std::cout << "aswd -> move the screen coordinates \n - and + -> to zoom in and out" << endl;
-
-    //testSpeedAlgorithms("./resources/newickTrees/ani.newick.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/core_snp_tree.newick.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/gene_distance.newick.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/kmer_distance.newick.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/life.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/mlsa.newick.txt");
-    //testSpeedAlgorithms("./resources/newickTrees/pepper_001.txt");
-
-    ifstream ifile;
-    //ifile.open("./resources/newickTrees/life.txt");
-    ifile.open("./resources/newickTrees/life.txt");
-    
-    stringstream buf;
-    buf << ifile.rdbuf();
-    string as(buf.str());    
-    Newick newick = Newick(as);
-    newick.printStatistics();
-
-    float valueW = 1.0f;
-    float hValue = 0.2f;
-
-    SRIP1_arg args1;
-    args1.setGamma(0.025f);
-    args1.seth(0.25f);
-    args1.setRho(0.8f);
-    args1.setW(2.0f); 
-
-    SRIP2_arg args2;
-    args2.setGamma(0.1f);
-    args2.seth(0.085f);
-    args2.setRho(0.1f);
-    args2.setW(2.0f);
-    args2.setEpsilon(2.0f);
-    args2.setSigma(1.0f);
-    args2.setLambda(30);
-
-
-    //SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
-
-    SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
-
-
-    GLFWwindow* window;
-
-    /* Initialize the library */
-    if (!glfwInit())
-        return -1;
-
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(screen_width, screen_height, "Hello World", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK) {
-        cout << "Failed initializing Glew" << endl;
-    }
-
-    cout << "OpenGL version:  " << glGetString(GL_VERSION) << endl;
-
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
-    imGUIWrapper imGuiWrapper = imGUIWrapper(window);
-
-    /* load shaders*/
-
-    Shader ourShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderColoringQuad.fs");
-    Shader highlightShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderTest.fs");
-    Shader shaderText("resources/shaderFiles/textShader.vs", "resources/shaderFiles/textShader.fs");
-    
-    FreetypeWrapper ft = FreetypeWrapper(shaderText);
-
-    unsigned int VBO, VAO, VBO_text, VAO_text, VBO_highlight, VAO_highlight;
-
-    //Graph buffers
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
-
-    glGenVertexArrays(1, &VAO_text);
-    glGenBuffers(1, &VBO_text);
-    glBindVertexArray(VAO_text);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_text);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    glGenVertexArrays(1, &VAO_highlight);
-    glGenBuffers(1, &VBO_highlight);
-    glBindVertexArray(VAO_highlight);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_highlight);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(0);
-
-    /* Loop until the user closes the window */
-    float time = glfwGetTime();
-
-    while (!glfwWindowShouldClose(window))
-    {
-        float deltaTime = time - glfwGetTime();
-        time = glfwGetTime();
-
-        processInput(window, deltaTime);
-
-        //processNewPlot(window, plot, hValue, newick, args1);
-        glfwSetWindowSizeCallback(window, window_size_callback);
-
-        //ourShader.setFloat("colorIn", 0.0f);
-        ourShader.use();
-
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(zoom * side, zoom * up, 0.0f));
-        transform = glm::scale(transform, glm::vec3(zoom, zoom, 1.0f));
-        //transform = glm::rotate(transform, 3.14f, glm::vec3(0.0f, 0.0f, 1.0f));
-
-        float rotation = 3.14f;
-
-        glm::mat2 rotate = glm::mat2(1.0f);
-        /*rotate[0][0] = cos(rotation);
-        rotate[0][1] = -sin(rotation);
-        rotate[1][0] = sin(rotation);
-        rotate[1][1] = cos(rotation);*/
-
-        ourShader.setInt("rotatePlot", rotatePlot?0:1);
-        ourShader.setInt("totalVertex", plot.getVertexDataArraySize());
-        ourShader.setInt("vertexPerQuad", QUAD_PRECISION);
-
-        ourShader.setMat4("transform", transform);
-        ourShader.setMat2("rotateMatrix", rotate);
-
-        draw2(VAO, &plot);
-
-        imGuiWrapper.renderInterface();
-
-        rotatePlot = imGuiWrapper.getRotate();
-        rasterize = imGuiWrapper.getRasterize(); //FIX since it collides with the key input methods!
-
-        if (rasterize) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-            
-        if (imGuiWrapper.pollNewPlot()) {
-            AlgorithmSelected as = imGuiWrapper.getAlgorithmSelected();
-
-            if (as == ALGORITHM_1) {
-                cout << "algorithm 1 selected" << endl;
-
-                SRIP1_arg args = imGuiWrapper.getArgs1();
-                //plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
-                plot = SpaceReclaimingIciclePlot(newick, args, false, QUAD_PRECISION);
-                glBindVertexArray(VAO);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
-                
-                //draw2(VAO, &plot);
-            } else if (as == ALGORITHM_1_E) {
-                SRIP1_arg args = imGuiWrapper.getArgs1();
-                //plot = SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
-                plot = SpaceReclaimingIciclePlot(newick, args, true, QUAD_PRECISION);
-                glBindVertexArray(VAO);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
-            }
-            else if (as == ALGORITHM_2) {
-                SRIP2_arg args = imGuiWrapper.getArgs2();
-                plot = SpaceReclaimingIciclePlot(newick, args, false, QUAD_PRECISION);
-
-                glBindVertexArray(VAO);
-                glBindBuffer(GL_ARRAY_BUFFER, VBO);
-                glBufferData(GL_ARRAY_BUFFER, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), GL_STATIC_DRAW);
-                //draw2(VAO, plot);
-            }
-            else {
-                //SHOULD NEVER HAPPEN!!!
-                cout << "no algorihtm selected, dafuq" << endl;
-            }
-        };
-
-        highlightSelectedNodes(selectingNode, rotatePlot, plot);
-
-        ft.RenderText(shaderText, selectedNodeText, 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 0.9f), VAO_text, VBO_text);
-
-        if (selectedNode != NULL) {
-            highlightShader.use();
-            highlightShader.setInt("rotatePlot", rotatePlot ? 0 : 1);
-
-            highlightShader.setMat4("transform", transform);
-            highlightShader.setMat2("rotateMatrix", rotate);
-
-            glBindVertexArray(VAO_highlight);
-            glBindBuffer(GL_ARRAY_BUFFER, VBO_highlight);
-            glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float) * QUAD_PRECISION, &data_selected, GL_STATIC_DRAW);
-
-            glDrawArrays(GL_QUADS, 0, 8*QUAD_PRECISION);
-        }
-
-
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
-
-        /* Poll for and process events */
-        glfwPollEvents();
-    }
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-
-    glDeleteVertexArrays(1, &VAO_highlight);
-    glDeleteBuffers(1, &VBO_highlight);
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwTerminate();
-    return 0;
-}
-
-/* Contains the "old" code for reference*/
-void draw2(unsigned int VAO, SpaceReclaimingIciclePlot* iciclePlot) {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    //BACKGROUND
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glBindVertexArray(VAO); 
-    glDrawArrays(GL_QUADS, 0, iciclePlot->getVertexDataArraySize()); 
-}
-
-void draw(unsigned int VAO, int sizeTest) {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    //BACKGROUND
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glBindVertexArray(VAO); 
-    glDrawArrays(GL_TRIANGLES, 0, sizeTest); 
+#include "Application.h"
+
+namespace IciclePlotApp {
+
+	static void glfw_error_callback(int error, const char* description)
+	{
+		fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+	}
+
+	Application::Application(const ApplicationSpecification& specification) : m_Specification(specification)
+	{
+		Init();
+	}
+
+	Application::~Application()
+	{
+		Shutdown();
+
+		//delete subWindows
+		for (InApplicationWindow* subWindow : subWindows) {
+			free(subWindow);
+		}
+	}
+
+	void Application::Run()
+	{
+		bool show_demo_window = true;
+		bool show_another_window = false;
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+		Shader shader = Shader("resources/shaderFiles/framebuffer.vs", "resources/shaderFiles/framebuffer.fs");
+		//Shader shaderScreen = Shader("resources/shaderFiles/framebuffers_screen.vs", "resources/shaderFiles/framebuffers_screen.fs");
+
+		float vertices[] = {
+		-0.5f, -0.5f, 0.0f, // left  
+		0.5f, -0.5f, 0.0f, // right 
+		0.0f,  0.5f, 0.0f  // top   
+		};
+
+		unsigned int VBO, VAO;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+		// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+		unsigned int frameBuffer = 0;
+		glGenFramebuffers(1, &frameBuffer);
+		
+
+		// Create new texture
+		unsigned int textureColorbuffer;
+		glGenTextures(1, &textureColorbuffer);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Specification.Width, m_Specification.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		
+		//create renderbuffer object for depth and stencil attachment
+		unsigned int rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height); // use a single renderbuffer object for both a depth AND stencil buffer.
+		
+		//bind framebuffer and attach texture to renderbufffer
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); 
+
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	//	unsigned int VBO, VAO;
+	//	glGenVertexArrays(1, &VAO);
+	//	glGenBuffers(1, &VBO);
+	//	glBindVertexArray(VAO);
+	//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//	glEnableVertexAttribArray(0);
+	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+		newWindow("1");
+		newWindow("2");
+		newWindow("3");
+		newWindow("3");
+		newImageWindow("4", textureColorbuffer);
+
+		// Main loop
+		while (!glfwWindowShouldClose(window))
+		{
+			// Poll and handle events (inputs, window resize, etc.)
+			// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+			// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
+			// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
+			// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+			glfwPollEvents();
+
+			//bind offscreen fb
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+			glEnable(GL_DEPTH_TEST);
+
+			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			//draw scene as usual
+			shader.use();
+			glBindVertexArray(VAO); 
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+					
+			//now we read the 'offscreen' framebuffer into the normal fb and are able to see it on the screen.
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDisable(GL_DEPTH_TEST);
+
+			// Start the Dear ImGui frame
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+			renderSubWindows();
+
+			// Rendering
+			ImGui::Render();
+			int display_w, display_h;
+			glfwGetFramebufferSize(window, &display_w, &display_h);
+			glViewport(0, 0, display_w, display_h);
+			glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+			glClear(GL_COLOR_BUFFER_BIT);
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			// Update and Render additional Platform Windows
+			// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+			//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				GLFWwindow* backup_current_context = glfwGetCurrentContext();
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+				glfwMakeContextCurrent(backup_current_context);
+			}
+
+			glfwSwapBuffers(window);
+		}
+
+		// Cleanup
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+
+		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+
+		glfwDestroyWindow(window);
+		glfwTerminate();
+	}
+	
+	void Application::newWindow(string windowName)
+	{
+		for (InApplicationWindow* subWindow : subWindows) {
+			if (subWindow->getWindowName() == windowName) {
+				cout << "Cannot create another window with the name:" + windowName + " - ImGui will combine similar named windows" << endl;
+				return;
+			}
+		}
+
+		subWindows.push_back(new InApplicationWindow(windowName));
+	}
+
+	void Application::newImageWindow(string windowName, unsigned int textureBuffer)
+	{
+		for (InApplicationWindow* subWindow : subWindows) {
+			if (subWindow->getWindowName() == windowName) {
+				cout << "Cannot create another window with the name:" + windowName + " - ImGui will combine similar named windows" << endl;
+				return;
+			}
+		}
+
+		subWindows.push_back(new InApplicationWindowImage(windowName, textureBuffer));
+	}
+
+	void Application::Init()
+	{
+		if (!glfwInit())
+		{
+			std::cout << "ERROR initializing glfw" << std::endl;
+		}
+
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+		window = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Name.c_str(), NULL, NULL);
+
+		if (!window)
+		{
+			// Window or OpenGL context creation failed
+			std::cout << "ERROR initializing glfw windows; Window or OpenGL context creation failed" << std::endl;
+		}
+
+		glfwMakeContextCurrent(window);
+		glfwSwapInterval(1); // Enable vsync
+		glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+		if (glewInit() != GLEW_OK) {
+			std::cout << "Failed initializing Glew" << std::endl;
+		}
+
+		std::cout << "OpenGL version:  " << glGetString(GL_VERSION) << std::endl;
+
+		int width, height;
+
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
+	
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+		// GL ES 2.0 + GLSL 100
+		const char* glsl_version = "#version 100";
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+		// GL 3.2 + GLSL 150
+		const char* glsl_version = "#version 150";
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+		//// GL 3.0 + GLSL 130
+		const char* glsl_version = "#version 130";
+		//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+		////glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+		////glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+
+	// Create window with graphics context
+
+		// Setup Dear ImGui context
+		//IMGUI_CHECKVERSION();
+		//ImGui::CreateContext();
+		//ImGuiIO& io = ImGui::GetIO(); (void)io;
+		////io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+		////io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
+
+
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init(glsl_version);
+	}
+
+	void Application::Shutdown()
+	{
+		glfwTerminate();
+
+		//Destroy ImGui context
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
+
+	void Application::renderSubWindows()
+	{
+		for (InApplicationWindow* subWindow : subWindows) {
+			subWindow->render();
+		}
+	}
+
+	void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+	{
+		// make sure the viewport matches the new window dimensions; note that width and 
+		// height will be significantly larger than specified on retina displays.
+		glViewport(0, 0, width, height);
+	}
 
 }
 
-void window_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-
-    screen_width = width;
-    screen_height = height;
-}
-
-void processInput(GLFWwindow* window, float deltaTime)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        up += deltaTime * CAMERA_SPEED;
-    }else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        up -= deltaTime* CAMERA_SPEED;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        side -= deltaTime * CAMERA_SPEED;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        side += deltaTime * CAMERA_SPEED;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { // && !Pressed_KEY_MINUS) {
-        Pressed_KEY_MINUS = true;
-        if (zoom <= 0.1f) {
-            return;
-        }
-        zoom -= 0.1f;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { // && !Pressed_KEY_EQUAL) {
-        Pressed_KEY_EQUAL = true;
-        zoom += 0.1f;
-    }
-    //else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !Pressed_KEY_1) {
-    //    Pressed_KEY_1 = true;
-    //    rotatePlot = !rotatePlot;
-    //}
-    //else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && !Pressed_KEY_2) {
-    //    Pressed_KEY_2 = true;
-    //    rasterize = !rasterize;
-
-    //    if (rasterize) {
-    //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //    }
-    //    else {
-    //        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //    }
-    //}
-    /*else if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_RELEASE && Pressed_KEY_MINUS) {
-        Pressed_KEY_MINUS = false;
-    }else if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_RELEASE && Pressed_KEY_EQUAL) {
-        Pressed_KEY_EQUAL = false;
-    }*/
-    else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_RELEASE && Pressed_KEY_1) {
-        Pressed_KEY_1 = false;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_RELEASE && Pressed_KEY_2) {
-        Pressed_KEY_2= false;
-    }
-}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        glfwGetCursorPos(window, &xpos_mouse, &ypos_mouse);       
-
-        selectingNode = true;
-    }
-}
-
-void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIciclePlot& plot) {
-    //no new node was selected
-    if (!search) {
-        return;
-    }
-
-    else {
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(side, up, 0.0f));
-        transform = glm::scale(transform, glm::vec3(1/zoom, 1/zoom, 1.0f));
-
-        //map 
-        float xpos_t = ((xpos_mouse - (screen_width / 2.0f))  / screen_width * 2.0f);
-        float ypos_t = -(ypos_mouse - (screen_height/2.0f)) / screen_height * 2.0f;
-
-        glm::vec4 trans = transform * glm::vec4(xpos_t, ypos_t, -1.0f, -1.0f);
-
-        //cout << "normal point: (" << xpos_t << "," << ypos_t << ") -> (" << trans.x << " - 1.0f," << trans.y << ") ";
-        //cout << "zoom: (" << zoom << ") up, side( " << up << "," << side << ")";
-
-        float x_trans = trans.x;
-        float y_trans = trans.y;
-
-        if (rotatePlot) {
-
-            x_trans += 1.0f;
-
-            float y = std::sqrt(std::pow(trans.x, 2) + std::pow(trans.y, 2));
-
-            //cos-1 [ (a · b) / (|a| |b|) ]
-            float r = glm::dot(glm::vec2(0.0f, y), glm::vec2(trans.x, trans.y)) / (glm::length(glm::vec2(0.0f, y)) * glm::length(glm::vec2(trans.x, trans.y)));
-
-            float x = - std::acos(r) / 3.1415926538;
-
-            //cout << "x,y rotate " << x << " " << y <<  " r: " << r << endl;
-
-            if (trans.x >= 0.0f) {
-                x = -x;
-            }
-
-            x_trans = x + 1.0f; //we x_trans to points in -1, 1; but indexing requires these points to be in [0,2];
-            y_trans = y;
-
-           /* cout << "-> (" << x_trans << " " << y_trans << ") | zoom: (" << zoom << ") up, side(" << up << ", " << side << ")";*/
-        }
-        
-        cout << endl;
-
-        // we do not trans.x - 1.0f since values in index range from 0-2 not -1 - 1.
-        TreeNode* node = plot.selectTreeNode(x_trans, y_trans);
-
-        if (node != NULL) {
-            cout << "selected node succesfully:     ";
-            TreeNode n = (*node);
-            n.print();
-            selectingNode = true;
-            selectedNode = node;
-
-            int index = 0;
-
-            plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, node->point1, node->point2, node->point3, node->point4, QUAD_PRECISION);
-
-            selectedNodeText = "selectedNode: " + n.root_label;
-
-        } //NODE equals zero
-        else {
-            selectedNode = NULL;
-        }
-    }
-
-    selectingNode = false;
-}
-
-void testSpeedAlgorithms(string path) {
-    ifstream ifile;
-    ifile.open(path);
-
-    //ifile.open("./resources/newickTrees/pepper_001.txt");
-
-    stringstream buf;
-    buf << ifile.rdbuf();
-    string as(buf.str());
-    Newick newick = Newick(as);
-
-    newick.printStatistics();
-
-    float valueW = 1.0f;
-    float hValue = 0.2f;
-
-    SRIP1_arg args1;
-    args1.setGamma(0.1f);
-    args1.seth(0.1f);
-    args1.setRho(0.1f);
-    args1.setW(2.0f);
-
-    SRIP2_arg args2;
-    args2.setGamma(0.1f);
-    args2.seth(0.1f);
-    args2.setRho(0.1f);
-    args2.setW(2.0f);
-    args2.setEpsilon(2.0f);
-    args2.setSigma(1.0f);
-    args2.setLambda(30);
-
-    cout << "Algorithm 1,1-E, 2 respectivelly, file" << path << endl;
-
-    //Yes I do want that, it is just for testing bruv
-    SpaceReclaimingIciclePlot(newick, args1, false, QUAD_PRECISION);
-    SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
-    SpaceReclaimingIciclePlot(newick, args2, false, QUAD_PRECISION);
-}
-
-//Gets mouse position on pressing
-//void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-//{
-//    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-//        cout << "MOUSE PRESSED" << endl;
-//    }
-//    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-//        double xpos, ypos;
-//        glfwGetCursorPos(window, &xpos, &ypos);
-//
-//        cout << xpos << " " << ypos << endl;
-//    }
-//}
