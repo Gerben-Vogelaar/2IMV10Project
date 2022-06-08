@@ -6,6 +6,8 @@
 #include "imgui_impl_opengl3.h"
 
 #include "customWindows/InApplicationWindowImage.h"
+#include "SceneUtils/SceneHandler.h"
+#include "SceneUtils/Scene.h"
 
 #include <string>
 #include <iostream>
@@ -28,20 +30,15 @@ namespace IciclePlotApp {
 
 		void Run();
 
-		void newWindow(string windowName);
-		void newImageWindow(string windowName, unsigned int textureBuffer);
-
 	private:
 		void Init();
 		void Shutdown();
 		
-		void renderSubWindows();
-
 	private:
 		ApplicationSpecification m_Specification;
 		GLFWwindow* window = nullptr;
-		
-		std::list<InApplicationWindow*> subWindows;
+	
+		SceneHandler* sceneHandler;
 
 		bool m_Running = false;
 	};

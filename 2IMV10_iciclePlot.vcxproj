@@ -376,6 +376,7 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\customWindows\InApplicationWindowImage.h" />
     <ClInclude Include="src\customWindows\InApplicationWindow.h" />
+    <ClInclude Include="src\customWindows\WindowCamera.h" />
     <ClInclude Include="src\iciclePlot\IciclePlot.h" />
     <ClInclude Include="src\iciclePlot\SpaceReclaimingIciclePlot.h" />
     <ClInclude Include="src\iciclePlot\SRIParg.h" />
@@ -384,6 +385,9 @@
     <ClInclude Include="src\newick\NewickTree.h" />
     <ClInclude Include="src\newick\NewickTreeIndex.h" />
     <ClInclude Include="src\newick\TreeNode.h" />
+    <ClInclude Include="src\SceneUtils\Scene.h" />
+    <ClInclude Include="src\SceneUtils\SceneHandler.h" />
+    <ClInclude Include="src\SceneUtils\SceneIciclePlot.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\utils\FreetypeWrapper.h" />
     <ClInclude Include="src\utils\imGUIWrapper.h" />
@@ -541,6 +545,8 @@
     <None Include="resources\shaderFiles\framebuffers_screen.vs" />
     <None Include="resources\shaderFiles\openGLWindowShader.fs" />
     <None Include="resources\shaderFiles\openGLWindowShader.vs" />
+    <None Include="resources\shaderFiles\shader_imGUIGraph.fs" />
+    <None Include="resources\shaderFiles\shader_imGUIGraph.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\glm\glm\detail\glm.cpp" />
@@ -555,10 +561,16 @@
     <ClCompile Include="src\ApplicationMain.cpp" />
     <ClCompile Include="src\customWindows\InApplicationWindowImage.cpp" />
     <ClCompile Include="src\customWindows\InApplicationWindow.cpp" />
+    <ClCompile Include="src\customWindows\MainDockingWindow.cpp" />
+    <ClCompile Include="src\customWindows\MainDockingWindow.h" />
+    <ClCompile Include="src\customWindows\WindowCamera.cpp" />
     <ClCompile Include="src\iciclePlot\IciclePlot.cpp" />
     <ClCompile Include="src\iciclePlot\SpaceReclaimingIciclePlot.cpp" />
     <ClCompile Include="src\newick\NewickTree.cpp" />
     <ClCompile Include="src\newick\NewickTreeIndex.cpp" />
+    <ClCompile Include="src\SceneUtils\Scene.cpp" />
+    <ClCompile Include="src\SceneUtils\SceneHandler.cpp" />
+    <ClCompile Include="src\SceneUtils\SceneIciclePlot.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\utils\FreetypeWrapper.cpp" />
     <ClCompile Include="src\utils\imGUIWrapper.cpp" />

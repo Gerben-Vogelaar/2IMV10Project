@@ -1,4 +1,8 @@
 #include "Application.h"
+#include <src/newick/NewickTree.h>
+#include <src/iciclePlot/SRIParg.h>
+#include <src/iciclePlot/SpaceReclaimingIciclePlot.h>
+#include <src/customWindows/MainDockingWindow.h>
 
 namespace IciclePlotApp {
 
@@ -15,11 +19,6 @@ namespace IciclePlotApp {
 	Application::~Application()
 	{
 		Shutdown();
-
-		//delete subWindows
-		for (InApplicationWindow* subWindow : subWindows) {
-			free(subWindow);
-		}
 	}
 
 	void Application::Run()
@@ -29,7 +28,41 @@ namespace IciclePlotApp {
 		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 		Shader shader = Shader("resources/shaderFiles/framebuffer.vs", "resources/shaderFiles/framebuffer.fs");
+		Shader shader2 = Shader("resources/shaderFiles/shader_imGUIGraph.vs", "resources/shaderFiles/shader_imGUIGraph.fs");
 		//Shader shaderScreen = Shader("resources/shaderFiles/framebuffers_screen.vs", "resources/shaderFiles/framebuffers_screen.fs");
+
+		ifstream ifile;
+		//ifile.open("./resources/newickTrees/life.txt");
+		ifile.open("./resources/newickTrees/test.txt");
+
+		stringstream buf;
+		buf << ifile.rdbuf();
+		string as(buf.str());
+		Newick newick = Newick(as);
+		newick.printStatistics();
+
+		float valueW = 1.0f;
+		float hValue = 0.2f;
+
+		SRIP1_arg args1;
+		args1.setGamma(0.025f);
+		args1.seth(0.25f);
+		args1.setRho(0.8f);
+		args1.setW(2.0f);
+
+		SRIP2_arg args2;
+		args2.setGamma(0.1f);
+		args2.seth(0.085f);
+		args2.setRho(0.1f);
+		args2.setW(2.0f);
+		args2.setEpsilon(2.0f);
+		args2.setSigma(1.0f);
+		args2.setLambda(30);
+
+
+		//SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
+
+		SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
 
 		float vertices[] = {
 		-0.5f, -0.5f, 0.0f, // left  
@@ -37,60 +70,40 @@ namespace IciclePlotApp {
 		0.0f,  0.5f, 0.0f  // top   
 		};
 
-		unsigned int VBO, VAO;
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		glBindVertexArray(VAO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-		// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-		unsigned int frameBuffer = 0;
-		glGenFramebuffers(1, &frameBuffer);
+		float vertices2[] = {
+		-1.0f, -0.5f, 0.0f, // left  
+		0.5f, -0.5f, 0.0f, // right 
+		0.0f,  0.5f, 0.0f  // top   
+		};
 		
+		float quad[] = {
+		0.5f, 0.5f,
+		0.5f, -0.5f,
+		-0.5f,  0.5f
+		};
 
-		// Create new texture
-		unsigned int textureColorbuffer;
-		glGenTextures(1, &textureColorbuffer);
-		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Specification.Width, m_Specification.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		
-		//create renderbuffer object for depth and stencil attachment
-		unsigned int rbo;
-		glGenRenderbuffers(1, &rbo);
-		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height); // use a single renderbuffer object for both a depth AND stencil buffer.
-		
-		//bind framebuffer and attach texture to renderbufffer
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); 
+		MainDockingWindow* initWindow = new MainDockingWindow();
 
+		Scene scene(&shader, sizeof(vertices), vertices, 3, m_Specification.Width, m_Specification.Height);
+		Scene scene2(&shader, sizeof(vertices2), vertices2, 3, m_Specification.Width, m_Specification.Height);
+		Scene scene3(&shader2, sizeof(quad), quad, 3, m_Specification.Width, m_Specification.Height, 2);
+		Scene scene4(&shader2, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), plot.getVertexDataArraySize(),
+			m_Specification.Width, m_Specification.Height, 2);
 
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		sceneHandler->addScene(&scene);
+		sceneHandler->addScene(&scene2);
+		sceneHandler->addScene(&scene3);
+		sceneHandler->addScene(&scene4);
 
-
-	//	unsigned int VBO, VAO;
-	//	glGenVertexArrays(1, &VAO);
-	//	glGenBuffers(1, &VBO);
-	//	glBindVertexArray(VAO);
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//	glEnableVertexAttribArray(0);
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-		newWindow("1");
-		newWindow("2");
-		newWindow("3");
-		newWindow("3");
-		newImageWindow("4", textureColorbuffer);
-
+		initWindow->newWindow("1");
+		initWindow->newWindow("2");
+		initWindow->newWindow("3");
+		initWindow->newWindow("3");
+		initWindow->newImageWindow("4", scene.getTextureBuffer());
+		initWindow->newImageWindow("5", scene2.getTextureBuffer());
+		initWindow->newImageWindow("6", scene3.getTextureBuffer());
+		initWindow->newImageWindow("7", scene4.getTextureBuffer());
+			
 		// Main loop
 		while (!glfwWindowShouldClose(window))
 		{
@@ -101,28 +114,17 @@ namespace IciclePlotApp {
 			// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 			glfwPollEvents();
 
-			//bind offscreen fb
-			glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-			glEnable(GL_DEPTH_TEST);
-
-			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			//draw scene as usual
-			shader.use();
-			glBindVertexArray(VAO); 
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-					
-			//now we read the 'offscreen' framebuffer into the normal fb and are able to see it on the screen.
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glDisable(GL_DEPTH_TEST);
+			sceneHandler->updateScenes();
 
 			// Start the Dear ImGui frame
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			renderSubWindows();
+			initWindow->renderContent();
+
+
+			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 			// Rendering
 			ImGui::Render();
@@ -133,7 +135,15 @@ namespace IciclePlotApp {
 			glClear(GL_COLOR_BUFFER_BIT);
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			ImGuiIO& io = ImGui::GetIO();
+
+			if (ImGui::GetIO().WantCaptureMouse) {
+				io.MetricsActiveWindows;
+				//cout << "mouse captured!!!" << endl;
+			
+			}
+
+			(void)io;
 			// Update and Render additional Platform Windows
 			// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
 			//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
@@ -159,32 +169,15 @@ namespace IciclePlotApp {
 		glfwTerminate();
 	}
 	
-	void Application::newWindow(string windowName)
-	{
-		for (InApplicationWindow* subWindow : subWindows) {
-			if (subWindow->getWindowName() == windowName) {
-				cout << "Cannot create another window with the name:" + windowName + " - ImGui will combine similar named windows" << endl;
-				return;
-			}
-		}
 
-		subWindows.push_back(new InApplicationWindow(windowName));
-	}
-
-	void Application::newImageWindow(string windowName, unsigned int textureBuffer)
-	{
-		for (InApplicationWindow* subWindow : subWindows) {
-			if (subWindow->getWindowName() == windowName) {
-				cout << "Cannot create another window with the name:" + windowName + " - ImGui will combine similar named windows" << endl;
-				return;
-			}
-		}
-
-		subWindows.push_back(new InApplicationWindowImage(windowName, textureBuffer));
-	}
 
 	void Application::Init()
 	{
+		if (m_Running) {
+			std::cout << "Application already initialized" << std::endl;
+			return;
+		}
+
 		if (!glfwInit())
 		{
 			std::cout << "ERROR initializing glfw" << std::endl;
@@ -239,15 +232,6 @@ namespace IciclePlotApp {
 		////glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-	// Create window with graphics context
-
-		// Setup Dear ImGui context
-		//IMGUI_CHECKVERSION();
-		//ImGui::CreateContext();
-		//ImGuiIO& io = ImGui::GetIO(); (void)io;
-		////io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-		////io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -270,6 +254,8 @@ namespace IciclePlotApp {
 		// Setup Platform/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
+
+		sceneHandler = new SceneHandler();
 	}
 
 	void Application::Shutdown()
@@ -280,13 +266,6 @@ namespace IciclePlotApp {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-	}
-
-	void Application::renderSubWindows()
-	{
-		for (InApplicationWindow* subWindow : subWindows) {
-			subWindow->render();
-		}
 	}
 
 	void framebuffer_size_callback(GLFWwindow* window, int width, int height)

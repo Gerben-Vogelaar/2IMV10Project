@@ -2,7 +2,7 @@
 
 /* multVector specifies the additional amount of meshes per quadrangle*/
 SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector) {
-	this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * multVector;
+	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * multVector;
 	this->vertexDataArray = new float[sizeVertexDataArray];
 
 	cellHeight = arg.h;
@@ -10,7 +10,6 @@ SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_a
 	int index = 0;
 
 	if (expirimental) {
-		//SRIP1Expirimental_initQ(arg, newickTree, vertexDataArray, index, multVector);
 		SRIP1Expirimental_initQ_h(arg, newickTree, vertexDataArray, index, multVector);
 	}
 	else {
@@ -20,7 +19,7 @@ SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_a
 
 SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, int multVector) {
 
-	this->sizeVertexDataArray = 8 * newickTree.getTreeSize() * (multVector);
+	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * (multVector);
 	this->vertexDataArray = new float[sizeVertexDataArray];
 
 	cout << "nr vertex: " << sizeVertexDataArray << endl;
@@ -52,12 +51,12 @@ void SpaceReclaimingIciclePlot::SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float
 void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector)
 {
 	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
-	float x = (arg.W - w) / 2.0f; //
+	float x = (arg.W - w) / 2.0f; 
 	float y = (d + 1.0f) * arg.h;
 
 	vector<TreeNode*> Pp;
 	float wp = 0.0f;
-	float mp = 0.0f;
+	int mp = 0;
 
 	for (TreeNode* p : P) {
 		Point2 p0 = Point2(p->position.x, p->position.y);
@@ -169,7 +168,7 @@ void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode*> P, int m, fl
 			}
 			p0 = p1;
 			vector<TreeNode> Cp = c->descendant_list; //wrong because not references???
-			int n = c->descendant_list.size();
+			size_t n = c->descendant_list.size();
 			c->sticky = n == 0;
 			if (c->sticky && c->span < arg.lambda) {
 				Pp.push_back(c);
@@ -315,8 +314,8 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 	float p3p4_width = p4.x - p3.x;
 	float width_total = p4.x - p1.x;
 
-	int stepsT1 = multVector * (p1p2_width / width_total);
-	int stepsT3 = multVector * (p3p4_width / width_total);
+	int stepsT1 = round(multVector * (p1p2_width / width_total));
+	int stepsT3 = round(multVector * (p3p4_width / width_total));
 	int stepsT2 = multVector - stepsT1 - stepsT3;
 
 	//3. draw left-triangle p1, 
@@ -356,6 +355,12 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = y2;
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
+
+		vertexData[index++] = x2;
+		vertexData[index++] = y2;
+		vertexData[index++] = x2;
+		vertexData[index++] = yflat;
+
 		vertexData[index++] = x;
 		vertexData[index++] = yflat;
 	}
@@ -396,6 +401,12 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = y2;
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
+
+		vertexData[index++] = x2;
+		vertexData[index++] = y2;
+		vertexData[index++] = x2;
+		vertexData[index++] = yflat;
+
 		vertexData[index++] = x;
 		vertexData[index++] = yflat;
 	}
@@ -448,6 +459,12 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = y2_1;
 		vertexData[index++] = x2_2;
 		vertexData[index++] = y2_2;
+
+		vertexData[index++] = x2_1;
+		vertexData[index++] = y2_1;
+		vertexData[index++] = x2_2;
+		vertexData[index++] = y2_2;
+
 		vertexData[index++] = x_2;
 		vertexData[index++] = y_2;
 	}
@@ -608,7 +625,7 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 	}
 }
 
-void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontalRef(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector) {
+void SpaceReclaimingIciclePlot::drawQuadrangleHorizontal(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector) {
 	float topWidth = (p3.x - p4.x) / (multVector - 1);
 	float botWidth = (p2.x - p1.x) / (multVector - 1);
 

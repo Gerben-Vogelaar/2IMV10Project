@@ -11,17 +11,11 @@ using namespace std;
 class SpaceReclaimingIciclePlot {
 
 public:
-	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool horizontal, int multVector);
-	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool horizontal, int multVector);
-
-
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool experimental);
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool experimental, int multVector);
+	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool experimental, int multVector=1);
 	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool experimental, int multVector);
+	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool experimental, int multVector=1);
 
-
-	void drawQuadrangleByQuadrangleHorizontalRef(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector);
+	void drawQuadrangleHorizontal(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector);
 
 	/*
 	* W: width of diagram
@@ -49,17 +43,8 @@ public:
 
 private:
 	float* vertexDataArray;
+	//number of vertex, not bytes
 	int sizeVertexDataArray;
-
-	//TODO: make the algorithms more modular, now most algorithms do the same with the exception of an small added code segment or a different vertex generation call.
-
-	/*void SRIP1_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index);
-	void SRIP1_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index);
-	void SRIP1_s_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1_s_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
-
-	void SRIP1Expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index);
-	void SRIP1Expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset);*/
 
 	//algorithms below are actually used in the code :
 	//quadrangle Draw ----------------------------
@@ -69,15 +54,6 @@ private:
 
 	void SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
-
-	//----------------------------------------------
-	/*void SRIP1Expirimental_initQ(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1Expirimental_rQ(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);*/
-	//-----------------------------------------------
-
-
-	/*void SRIP1_s_expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1_s_expirimental_r(int d, vector<TreeNode> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector);*/
 
 	void displaceQuadranglesX(const float x, float* vertexData, int sizeVertexData);
 	void displaceQuadranglesY(const float y, float* vertexData, int sizeVertexData);

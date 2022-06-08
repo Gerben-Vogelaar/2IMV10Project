@@ -484,7 +484,7 @@ void highlightSelectedNodes(bool& search, bool rotatePlot, SpaceReclaimingIcicle
 
             int index = 0;
 
-            plot.drawQuadrangleByQuadrangleHorizontalRef(data_selected, index, node->point1, node->point2, node->point3, node->point4, QUAD_PRECISION);
+            plot.drawQuadrangleHorizontal(data_selected, index, node->point1, node->point2, node->point3, node->point4, QUAD_PRECISION);
 
             selectedNodeText = "selectedNode: " + n.root_label;
 
