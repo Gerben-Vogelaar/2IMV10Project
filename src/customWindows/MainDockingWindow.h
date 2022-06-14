@@ -5,6 +5,7 @@
 
 #include <list>
 #include <iostream>
+#include <src/SceneUtils/Scene.h>
 
 
 class MainDockingWindow {
@@ -15,7 +16,7 @@ public:
 	void renderContent();
 
 	void newWindow(string windowName);
-	void newImageWindow(string windowName, unsigned int textureBuffer);
+	void newImageWindow(string windowName, std::shared_ptr<Scene> scene);
 	void renderSubwindows();
 
 private:

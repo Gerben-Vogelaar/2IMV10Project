@@ -386,7 +386,7 @@
     <ClInclude Include="src\newick\NewickTreeIndex.h" />
     <ClInclude Include="src\newick\TreeNode.h" />
     <ClInclude Include="src\SceneUtils\Scene.h" />
-    <ClInclude Include="src\SceneUtils\SceneHandler.h" />
+    <ClInclude Include="src\SceneUtils\SceneCamera.h" />
     <ClInclude Include="src\SceneUtils\SceneIciclePlot.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\utils\FreetypeWrapper.h" />
@@ -569,7 +569,7 @@
     <ClCompile Include="src\newick\NewickTree.cpp" />
     <ClCompile Include="src\newick\NewickTreeIndex.cpp" />
     <ClCompile Include="src\SceneUtils\Scene.cpp" />
-    <ClCompile Include="src\SceneUtils\SceneHandler.cpp" />
+    <ClCompile Include="src\SceneUtils\SceneCamera.cpp" />
     <ClCompile Include="src\SceneUtils\SceneIciclePlot.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\utils\FreetypeWrapper.cpp" />

@@ -160,7 +160,7 @@ int Mmain2(void)
     Shader highlightShader("resources/shaderFiles/shaderSRIP2.vs", "resources/shaderFiles/shaderTest.fs");
     Shader shaderText("resources/shaderFiles/textShader.vs", "resources/shaderFiles/textShader.fs");
     
-    FreetypeWrapper ft = FreetypeWrapper(shaderText);
+    //FreetypeWrapper ft = FreetypeWrapper(shaderText);
 
     unsigned int VBO, VAO, VBO_text, VAO_text, VBO_highlight, VAO_highlight;
 
@@ -200,7 +200,7 @@ int Mmain2(void)
     glBindVertexArray(0);
 
     /* Loop until the user closes the window */
-    float time = glfwGetTime();
+    double time = glfwGetTime();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -288,7 +288,7 @@ int Mmain2(void)
 
         highlightSelectedNodes(selectingNode, rotatePlot, plot);
 
-        ft.RenderText(shaderText, selectedNodeText, 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 0.9f), VAO_text, VBO_text);
+        //ft.RenderText(shaderText, selectedNodeText, 100.0f, 10.0f, 0.5f, glm::vec3(0.0f, 0.1f, 0.9f), VAO_text, VBO_text);
 
         if (selectedNode != NULL) {
             highlightShader.use();

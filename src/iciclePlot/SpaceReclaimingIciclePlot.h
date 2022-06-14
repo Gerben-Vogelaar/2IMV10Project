@@ -11,9 +11,9 @@ using namespace std;
 class SpaceReclaimingIciclePlot {
 
 public:
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool experimental, int multVector=1);
+	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool experimental = false, int multVector=1);
 	//SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental);
-	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool experimental, int multVector=1);
+	SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool experimental = false, int multVector=1);
 
 	void drawQuadrangleHorizontal(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector);
 

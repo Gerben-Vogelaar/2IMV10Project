@@ -6,18 +6,26 @@
 #include "src/shader/shader.h"
 
 #include <iostream>
+#include <src/SceneUtils/Scene.h>
 
 
 
 	class InApplicationWindowImage : public InApplicationWindow{
 
 	public:
-		InApplicationWindowImage(string windowName, unsigned int textureBuffer);
+		InApplicationWindowImage(string windowName, std::shared_ptr<Scene> scene);
 
 		void render();
-		void addTextureBuffer(unsigned int textureBuffer);
-
+		void update();
+		
 	private:
-		unsigned int textureBuffer = NULL;
+		std::shared_ptr<Scene> scene;
+
+		ImVec2 previousDraggedDistance = ImVec2(0.0f, 0.0f);
+		ImVec2 draggedDistance = ImVec2(0.0f, 0.0f);
+		bool dragging = false;
+		const float MOVE_SPEED_IMAGE = 0.01f;
+
+		void handleInput();
 	};
 

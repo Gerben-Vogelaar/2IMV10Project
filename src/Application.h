@@ -6,7 +6,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include "customWindows/InApplicationWindowImage.h"
-#include "SceneUtils/SceneHandler.h"
 #include "SceneUtils/Scene.h"
 
 #include <string>
@@ -33,13 +32,12 @@ namespace IciclePlotApp {
 	private:
 		void Init();
 		void Shutdown();
+		void HandleMouseEvents();
 		
 	private:
 		ApplicationSpecification m_Specification;
 		GLFWwindow* window = nullptr;
 	
-		SceneHandler* sceneHandler;
-
 		bool m_Running = false;
 	};
 

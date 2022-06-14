@@ -369,10 +369,10 @@
     <ClInclude Include="Dependencies\imgui\backends\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="src\customWindows\InApplicationWindowImage.h" />
     <ClInclude Include="src\customWindows\InApplicationWindow.h" />
-    <ClInclude Include="src\SceneUtils\SceneHandler.h" />
     <ClInclude Include="src\SceneUtils\Scene.h" />
     <ClInclude Include="src\SceneUtils\SceneIciclePlot.h" />
     <ClInclude Include="src\customWindows\WindowCamera.h" />
+    <ClInclude Include="src\SceneUtils\SceneCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\GLEW\doc\advanced.html" />
@@ -550,12 +550,12 @@
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\customWindows\InApplicationWindowImage.cpp" />
     <ClCompile Include="src\customWindows\InApplicationWindow.cpp" />
-    <ClCompile Include="src\SceneUtils\SceneHandler.cpp" />
     <ClCompile Include="src\SceneUtils\Scene.cpp" />
     <ClCompile Include="src\SceneUtils\SceneIciclePlot.cpp" />
     <ClCompile Include="src\customWindows\WindowCamera.cpp" />
     <ClCompile Include="src\customWindows\MainDockingWindow.cpp" />
     <ClCompile Include="src\customWindows\MainDockingWindow.h" />
+    <ClCompile Include="src\SceneUtils\SceneCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Dependencies\imgui\README.txt" />

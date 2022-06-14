@@ -1,7 +1,9 @@
 #include "Scene.h"
 
-Scene::Scene(Shader* shader, int sizeData, float* data, int totalVertex, int widthScreen, int heightScreen, int GLint) : shader(shader), data(data), sizeData(sizeData), totalVertex(totalVertex), sizeAttributes(GLint)
+Scene::Scene(std::shared_ptr<Shader>& shader, int sizeData, float* data, int totalVertex, int widthScreen, int heightScreen, int GLint, bool ZOOM_ALLOWED) : shader(shader), data(data), sizeData(sizeData), totalVertex(totalVertex), sizeAttributes(GLint), ZOOM_ALLOWED(ZOOM_ALLOWED)
 {
+	//camera = std::make_unique<SceneCamera>(SceneCamera());
+
 	this->VAO = 0;
 	this->VBO = 0;
 
@@ -55,12 +57,32 @@ void Scene::updateScene()
 
 	//draw scene as usual
 	shader->use();
+
+	if (ZOOM_ALLOWED) {
+
+		shader->setMat4("transform", camera.getTransformationMatrix());
+	}
+
 	glBindVertexArray(this->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, totalVertex);
+	glDrawArrays(drawMode, 0, totalVertex);
 
 	//now we read the 'offscreen' framebuffer into the normal fb and are able to see it on the screen.
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDisable(GL_DEPTH_TEST);
+}
+
+/* Not used as of right now!!! */
+void Scene::setViewport(int x, int y, int width, int height) {
+	glViewport(x, y, width, height);
+}
+
+void Scene::zoomScene(float scrollUnits)
+{
+	camera.incrementZoomLegalValue(scrollUnits);
+}
+
+void Scene::moveScene(glm::vec2 offset) {
+	camera.addOffset(glm::vec3(offset, 0.0f));
 }
 
 unsigned int Scene::getTextureBuffer()
@@ -71,4 +93,12 @@ unsigned int Scene::getTextureBuffer()
 void Scene::setDrawConfig(int totalVertex)
 {
 	this->totalVertex = totalVertex;
+}
+
+void Scene::setDrawMode(GLenum mode) {
+	this->drawMode = mode;
+}
+
+void Scene::cameraDebug() {
+	camera.printZoom();
 }

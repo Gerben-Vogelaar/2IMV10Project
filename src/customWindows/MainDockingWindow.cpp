@@ -102,7 +102,7 @@ void MainDockingWindow::newWindow(string windowName)
 	subWindows.push_back(new InApplicationWindow(windowName));
 }
 
-void MainDockingWindow::newImageWindow(string windowName, unsigned int textureBuffer)
+void MainDockingWindow::newImageWindow(string windowName, std::shared_ptr<Scene> scene)
 {
 	for (InApplicationWindow* subWindow : subWindows) {
 		if (subWindow->getWindowName() == windowName) {
@@ -111,13 +111,15 @@ void MainDockingWindow::newImageWindow(string windowName, unsigned int textureBu
 		}
 	}
 
-	subWindows.push_back(new InApplicationWindowImage(windowName, textureBuffer));
+	subWindows.push_back(new InApplicationWindowImage(windowName, scene));
 }
 
 void MainDockingWindow::renderSubwindows()
 {
     for (InApplicationWindow* window : subWindows) {
+        window->update();
         window->render();
     }
 
+    
 }

@@ -6,6 +6,8 @@
 
 namespace IciclePlotApp {
 
+	void handleMouseEvents();
+
 	static void glfw_error_callback(int error, const char* description)
 	{
 		fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -27,8 +29,8 @@ namespace IciclePlotApp {
 		bool show_another_window = false;
 		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-		Shader shader = Shader("resources/shaderFiles/framebuffer.vs", "resources/shaderFiles/framebuffer.fs");
-		Shader shader2 = Shader("resources/shaderFiles/shader_imGUIGraph.vs", "resources/shaderFiles/shader_imGUIGraph.fs");
+		std::shared_ptr<Shader> shader = std::make_shared<Shader>(Shader("resources/shaderFiles/framebuffer.vs", "resources/shaderFiles/framebuffer.fs"));
+		std::shared_ptr<Shader> shader2 = std::make_shared<Shader>(Shader("resources/shaderFiles/shader_imGUIGraph.vs", "resources/shaderFiles/shader_imGUIGraph.fs"));
 		//Shader shaderScreen = Shader("resources/shaderFiles/framebuffers_screen.vs", "resources/shaderFiles/framebuffers_screen.fs");
 
 		ifstream ifile;
@@ -62,7 +64,7 @@ namespace IciclePlotApp {
 
 		//SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, true, QUAD_PRECISION);
 
-		SpaceReclaimingIciclePlot plot = SpaceReclaimingIciclePlot(newick, args1, false, 50);
+		SpaceReclaimingIciclePlot* plot = new SpaceReclaimingIciclePlot(newick, args1, false, 50);
 
 		float vertices[] = {
 		-0.5f, -0.5f, 0.0f, // left  
@@ -77,33 +79,36 @@ namespace IciclePlotApp {
 		};
 		
 		float quad[] = {
-		0.5f, 0.5f,
-		0.5f, -0.5f,
-		-0.5f,  0.5f
+		 0.5f,  0.5f,
+		 0.5f, -0.5f,
+		-0.5f,  0.5f,
+		-0.5f, -0.5f
 		};
 
 		MainDockingWindow* initWindow = new MainDockingWindow();
 
-		Scene scene(&shader, sizeof(vertices), vertices, 3, m_Specification.Width, m_Specification.Height);
-		Scene scene2(&shader, sizeof(vertices2), vertices2, 3, m_Specification.Width, m_Specification.Height);
-		Scene scene3(&shader2, sizeof(quad), quad, 3, m_Specification.Width, m_Specification.Height, 2);
-		Scene scene4(&shader2, plot.getVertexDataArraySize() * sizeof(float), plot.getVertexDataArray(), plot.getVertexDataArraySize(),
-			m_Specification.Width, m_Specification.Height, 2);
+		Scene scene(shader, sizeof(vertices), vertices, 3, m_Specification.Width, m_Specification.Height, 3, true);
+		Scene scene2(shader, sizeof(vertices2), vertices2, 3, m_Specification.Width, m_Specification.Height, 3, true);
 
-		sceneHandler->addScene(&scene);
-		sceneHandler->addScene(&scene2);
-		sceneHandler->addScene(&scene3);
-		sceneHandler->addScene(&scene4);
+		Scene scene3(shader2, sizeof(quad), quad, 4, m_Specification.Width, m_Specification.Height, 2, true);
+		scene3.setDrawMode(GL_QUADS);
+
+		Scene scene4(shader2, plot->getVertexDataArraySize() * sizeof(float), plot->getVertexDataArray(), plot->getVertexDataArraySize(),
+			m_Specification.Width, m_Specification.Height, 2, true);
+		delete(plot);
 
 		initWindow->newWindow("1");
 		initWindow->newWindow("2");
 		initWindow->newWindow("3");
 		initWindow->newWindow("3");
-		initWindow->newImageWindow("4", scene.getTextureBuffer());
-		initWindow->newImageWindow("5", scene2.getTextureBuffer());
-		initWindow->newImageWindow("6", scene3.getTextureBuffer());
-		initWindow->newImageWindow("7", scene4.getTextureBuffer());
+		initWindow->newImageWindow("4", std::make_shared<Scene>(scene));
+		initWindow->newImageWindow("5", make_shared<Scene>(scene2));
+		initWindow->newImageWindow("6", make_shared<Scene>(scene3));
+		initWindow->newImageWindow("7", make_shared<Scene>(scene4));
 			
+		ImGui::GetIO().WantCaptureMouse = true;
+		ImGui::GetIO().WantCaptureKeyboard = true;
+
 		// Main loop
 		while (!glfwWindowShouldClose(window))
 		{
@@ -114,16 +119,12 @@ namespace IciclePlotApp {
 			// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 			glfwPollEvents();
 
-			sceneHandler->updateScenes();
-
 			// Start the Dear ImGui frame
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
 			initWindow->renderContent();
-
-
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 			// Rendering
@@ -137,11 +138,7 @@ namespace IciclePlotApp {
 
 			ImGuiIO& io = ImGui::GetIO();
 
-			if (ImGui::GetIO().WantCaptureMouse) {
-				io.MetricsActiveWindows;
-				//cout << "mouse captured!!!" << endl;
-			
-			}
+			handleMouseEvents();
 
 			(void)io;
 			// Update and Render additional Platform Windows
@@ -254,8 +251,6 @@ namespace IciclePlotApp {
 		// Setup Platform/Renderer backends
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init(glsl_version);
-
-		sceneHandler = new SceneHandler();
 	}
 
 	void Application::Shutdown()
@@ -275,5 +270,9 @@ namespace IciclePlotApp {
 		glViewport(0, 0, width, height);
 	}
 
+	//Handle all mouse events
+	void handleMouseEvents() {
+		
+	}
 }
 

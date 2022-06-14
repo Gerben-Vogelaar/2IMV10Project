@@ -11,9 +11,16 @@ void InApplicationWindow::render()
 	ImGui::End();
 }
 
+void InApplicationWindow::update() {};
+
 void InApplicationWindow::shutdown(){}
 
 string InApplicationWindow::getWindowName()
 {
 	return this->windowName;
+}
+
+glm::vec2 InApplicationWindow::getDimensions()
+{
+	return glm::vec2(width, height);
 }
