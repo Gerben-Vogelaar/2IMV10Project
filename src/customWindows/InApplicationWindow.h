@@ -17,9 +17,9 @@ public:
 	virtual void shutdown();
 
 	string getWindowName();
+	bool* getRunning();
 
 	glm::vec2 getDimensions();
-
 
 private:
 	string windowName;

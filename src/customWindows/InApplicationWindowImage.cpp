@@ -5,7 +5,11 @@ InApplicationWindowImage::InApplicationWindowImage(string windowName, std::share
 
 void InApplicationWindowImage::render()
 {
-	ImGui::Begin(getWindowName().c_str());
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin(getWindowName().c_str());	
+	
 
 	// Get the current cursor position (where your window is)
 	ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -20,7 +24,7 @@ void InApplicationWindowImage::render()
 	cout << "( " << windowSize.x << "," << windowSize.y << ") " << endl;
 	cout << "( " << ImGui::GetWindowSize().x << "," << ImGui::GetWindowSize().y << ") " << endl;*/
 
-	ImVec2 posCursor = ImGui::GetCursorScreenPos();
+	//ImVec2 posCursor = ImGui::GetCursorScreenPos();
 	ImVec2 maxPos = ImVec2(pos.x + windowSize.x, pos.y + windowSize.y);
 
 	 ImGui::GetWindowDrawList()->AddImage(
@@ -35,6 +39,9 @@ void InApplicationWindowImage::render()
 	handleInput();
 
 	ImGui::End();
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
 }
 
 void InApplicationWindowImage::update()
@@ -48,7 +55,7 @@ void InApplicationWindowImage::handleInput()
 
 	if (ImGui::IsWindowHovered()) {
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left, false)) {
-			scene.get()->cameraDebug();
+			//scene.get()->cameraDebug();
 		}
 
 		//handle scrolling of the image

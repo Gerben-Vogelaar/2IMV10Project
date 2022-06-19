@@ -376,6 +376,7 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\customWindows\InApplicationWindowImage.h" />
     <ClInclude Include="src\customWindows\InApplicationWindow.h" />
+    <ClInclude Include="src\customWindows\SettingsWindow.h" />
     <ClInclude Include="src\customWindows\WindowCamera.h" />
     <ClInclude Include="src\iciclePlot\IciclePlot.h" />
     <ClInclude Include="src\iciclePlot\SpaceReclaimingIciclePlot.h" />
@@ -562,10 +563,12 @@
     <ClCompile Include="src\customWindows\InApplicationWindowImage.cpp" />
     <ClCompile Include="src\customWindows\InApplicationWindow.cpp" />
     <ClCompile Include="src\customWindows\MainDockingWindow.cpp" />
-    <ClCompile Include="src\customWindows\MainDockingWindow.h" />
+    <ClInclude Include="src\customWindows\MainDockingWindow.h" />
+    <ClCompile Include="src\customWindows\SettingsWindow.cpp" />
     <ClCompile Include="src\customWindows\WindowCamera.cpp" />
     <ClCompile Include="src\iciclePlot\IciclePlot.cpp" />
     <ClCompile Include="src\iciclePlot\SpaceReclaimingIciclePlot.cpp" />
+    <ClCompile Include="src\iciclePlot\SRIParg.cpp" />
     <ClCompile Include="src\newick\NewickTree.cpp" />
     <ClCompile Include="src\newick\NewickTreeIndex.cpp" />
     <ClCompile Include="src\SceneUtils\Scene.cpp" />
@@ -681,7 +684,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\imgui;$(SolutionDir)Dependencies\imgui\backends;$(SolutionDir)Dependencies\imgui\backends\vulkan;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\freetype\include;$(SolutionDir)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -1,6 +1,7 @@
 #include "Scene.h"
 
-Scene::Scene(std::shared_ptr<Shader>& shader, int sizeData, float* data, int totalVertex, int widthScreen, int heightScreen, int GLint, bool ZOOM_ALLOWED) : shader(shader), data(data), sizeData(sizeData), totalVertex(totalVertex), sizeAttributes(GLint), ZOOM_ALLOWED(ZOOM_ALLOWED)
+Scene::Scene(std::shared_ptr<Shader>& shader, int sizeData, float* data, int totalVertex, int widthScreen, int heightScreen, int GLint, bool ZOOM_ALLOWED) 
+	: shader(shader), data(data), sizeData(sizeData), totalVertex(totalVertex), sizeAttributes(GLint), ZOOM_ALLOWED(ZOOM_ALLOWED)
 {
 	//camera = std::make_unique<SceneCamera>(SceneCamera());
 
@@ -13,11 +14,10 @@ Scene::Scene(std::shared_ptr<Shader>& shader, int sizeData, float* data, int tot
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeData, data, GL_STATIC_DRAW);
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glVertexAttribPointer(0, this->sizeAttributes, GL_FLOAT, GL_FALSE, this->sizeAttributes * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
+	glEnableVertexAttribArray(0);
 	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
 	this->frameBuffer = 0;
 	glGenFramebuffers(1, &frameBuffer);
@@ -65,6 +65,7 @@ void Scene::updateScene()
 
 	glBindVertexArray(this->VAO);
 	glDrawArrays(drawMode, 0, totalVertex);
+	//glDrawArrays(GL_QUADS, 0, 4);
 
 	//now we read the 'offscreen' framebuffer into the normal fb and are able to see it on the screen.
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

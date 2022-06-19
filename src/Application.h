@@ -32,7 +32,6 @@ namespace IciclePlotApp {
 	private:
 		void Init();
 		void Shutdown();
-		void HandleMouseEvents();
 		
 	private:
 		ApplicationSpecification m_Specification;

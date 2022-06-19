@@ -6,8 +6,6 @@
 
 namespace IciclePlotApp {
 
-	void handleMouseEvents();
-
 	static void glfw_error_callback(int error, const char* description)
 	{
 		fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -79,10 +77,13 @@ namespace IciclePlotApp {
 		};
 		
 		float quad[] = {
-		 0.5f,  0.5f,
 		 0.5f, -0.5f,
-		-0.5f,  0.5f,
-		-0.5f, -0.5f
+		 0.5f,  0.5f,
+		-0.5f, -0.5f,
+		
+		 0.5f,  0.5f,
+		-0.5f, -0.5f,
+		-0.5f,  0.5f
 		};
 
 		MainDockingWindow* initWindow = new MainDockingWindow();
@@ -90,21 +91,22 @@ namespace IciclePlotApp {
 		Scene scene(shader, sizeof(vertices), vertices, 3, m_Specification.Width, m_Specification.Height, 3, true);
 		Scene scene2(shader, sizeof(vertices2), vertices2, 3, m_Specification.Width, m_Specification.Height, 3, true);
 
-		Scene scene3(shader2, sizeof(quad), quad, 4, m_Specification.Width, m_Specification.Height, 2, true);
-		scene3.setDrawMode(GL_QUADS);
+		Scene scene3(shader2, sizeof(quad), quad, 6, m_Specification.Width, m_Specification.Height, 2, true);
+		//scene3.setDrawMode(GL_QUADS);
+		//scene3.setDrawConfig(4);
 
 		Scene scene4(shader2, plot->getVertexDataArraySize() * sizeof(float), plot->getVertexDataArray(), plot->getVertexDataArraySize(),
-			m_Specification.Width, m_Specification.Height, 2, true);
-		delete(plot);
-
+			m_Specification.Width, m_Specification.Height, 2, true);		
+		
 		initWindow->newWindow("1");
 		initWindow->newWindow("2");
 		initWindow->newWindow("3");
 		initWindow->newWindow("3");
-		initWindow->newImageWindow("4", std::make_shared<Scene>(scene));
-		initWindow->newImageWindow("5", make_shared<Scene>(scene2));
-		initWindow->newImageWindow("6", make_shared<Scene>(scene3));
+		/*initWindow->newImageWindow("4", std::make_shared<Scene>(scene));
+		initWindow->newImageWindow("5", make_shared<Scene>(scene2));*/
 		initWindow->newImageWindow("7", make_shared<Scene>(scene4));
+
+		initWindow->newImageWindow("6", make_shared<Scene>(scene3));
 			
 		ImGui::GetIO().WantCaptureMouse = true;
 		ImGui::GetIO().WantCaptureKeyboard = true;
@@ -125,6 +127,10 @@ namespace IciclePlotApp {
 			ImGui::NewFrame();
 
 			initWindow->renderContent();
+
+			ImGui::ShowDemoWindow();
+
+
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 			// Rendering
@@ -137,8 +143,6 @@ namespace IciclePlotApp {
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 			ImGuiIO& io = ImGui::GetIO();
-
-			handleMouseEvents();
 
 			(void)io;
 			// Update and Render additional Platform Windows
@@ -159,6 +163,8 @@ namespace IciclePlotApp {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+
+		delete(plot);
 
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 
@@ -268,11 +274,6 @@ namespace IciclePlotApp {
 		// make sure the viewport matches the new window dimensions; note that width and 
 		// height will be significantly larger than specified on retina displays.
 		glViewport(0, 0, width, height);
-	}
-
-	//Handle all mouse events
-	void handleMouseEvents() {
-		
 	}
 }
 

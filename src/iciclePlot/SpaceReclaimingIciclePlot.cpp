@@ -1,7 +1,7 @@
 #include "SpaceReclaimingIciclePlot.h"
 
 /* multVector specifies the additional amount of meshes per quadrangle*/
-SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, int multVector) {
+SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_arg arg, bool expirimental, const int multVector) {
 	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * multVector;
 	this->vertexDataArray = new float[sizeVertexDataArray];
 
@@ -17,7 +17,7 @@ SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP1_a
 	}
 }
 
-SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, int multVector) {
+SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_arg arg, bool expirimental, const int multVector) {
 
 	this->sizeVertexDataArray = 12 * newickTree.getTreeSize() * (multVector);
 	this->vertexDataArray = new float[sizeVertexDataArray];
@@ -35,7 +35,7 @@ SpaceReclaimingIciclePlot::SpaceReclaimingIciclePlot(Newick& newickTree, SRIP2_a
 	}
 }
 
-void SpaceReclaimingIciclePlot::SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
+void SpaceReclaimingIciclePlot::SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, const int multVector)
 {
 	drawQuadrangleByQuadrangleHorizontal(vertexDataArray, index, Point2(0.0f, 0.0f), Point2(arg.W, 0.0f), Point2(arg.W, arg.h), Point2(0.0f, arg.h), multVector);
 
@@ -48,7 +48,7 @@ void SpaceReclaimingIciclePlot::SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float
 	}
 }
 
-void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector)
+void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, size_t m, float w, SRIP1_arg arg, float* vertexData, int& index, const int multVector)
 {
 	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
 	float x = (arg.W - w) / 2.0f; 
@@ -56,7 +56,7 @@ void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, fl
 
 	vector<TreeNode*> Pp;
 	float wp = 0.0f;
-	int mp = 0;
+	size_t mp = 0;
 
 	for (TreeNode* p : P) {
 		Point2 p0 = Point2(p->position.x, p->position.y);
@@ -71,7 +71,7 @@ void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, fl
 			c.setPosition(Point3(x, y, delta));
 			x += delta + arg.gamma;
 			p0 = p1;
-			int n = c.descendant_list.size();
+			size_t n = c.descendant_list.size();
 			if (n > 0) {
 				Pp.push_back(&c);
 				wp += delta;
@@ -85,7 +85,7 @@ void SpaceReclaimingIciclePlot::SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, fl
 	}
 }
 
-void SpaceReclaimingIciclePlot::SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
+void SpaceReclaimingIciclePlot::SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, const int multVector)
 {
 	//compute weights
 //... TODO
@@ -106,7 +106,7 @@ void SpaceReclaimingIciclePlot::SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float
 	}
 }
 
-void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode*> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector)
+void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode*> P, size_t m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, const int multVector)
 {
 	float gammap = 0;
 
@@ -125,7 +125,7 @@ void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode*> P, int m, fl
 	float y = (d + 1) * arg.h;
 
 	vector<TreeNode*> Pp;
-	float mp = 0.0f;
+	size_t mp = 0;
 	float Ap = 0.0f;
 	float wp = 0.0f;
 	float gp = 0.0f;
@@ -187,7 +187,7 @@ void SpaceReclaimingIciclePlot::SRIP2_rQ_h(int d, vector<TreeNode*> P, int m, fl
 	}
 }
 
-//void SRIP2_r_h(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
+//void SRIP2_r_h(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, const int multVector);
 
 void SpaceReclaimingIciclePlot::drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4) {
 	vertexData[index++] = p1.x;
@@ -209,7 +209,7 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByTriangle(float* vertexData, int&
 	vertexData[index++] = p4.y;
 }
 
-void SpaceReclaimingIciclePlot::drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector) {
+void SpaceReclaimingIciclePlot::drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, const int multVector) {
 	float topWidth = (p3.x - p4.x) / (multVector - 1);
 	float botWidth = (p2.x - p1.x) / (multVector - 1);
 
@@ -257,7 +257,7 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangle(float* vertexData, in
 	vertexData[index++] = p4.y;
 }
 
-void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector) {
+void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, const int multVector) {
 
 	float topWidth = (p3.x - p4.x) / (multVector - 1);
 	float botWidth = (p2.x - p1.x) / (multVector - 1);
@@ -293,7 +293,7 @@ void swap(Point2* a, Point2* b)
 	*b = temp;
 }
 
-void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector) {
+void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, const int multVector) {
 	float topWidth = (p3.x - p4.x) / (multVector - 1);
 	float botWidth = (p2.x - p1.x) / (multVector - 1);
 
@@ -356,8 +356,8 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
 
-		vertexData[index++] = x2;
-		vertexData[index++] = y2;
+		vertexData[index++] = x;
+		vertexData[index++] = y;
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
 
@@ -402,8 +402,8 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
 
-		vertexData[index++] = x2;
-		vertexData[index++] = y2;
+		vertexData[index++] = x;
+		vertexData[index++] = y;
 		vertexData[index++] = x2;
 		vertexData[index++] = yflat;
 
@@ -460,8 +460,8 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 		vertexData[index++] = x2_2;
 		vertexData[index++] = y2_2;
 
-		vertexData[index++] = x2_1;
-		vertexData[index++] = y2_1;
+		vertexData[index++] = x_1;
+		vertexData[index++] = y_1;
 		vertexData[index++] = x2_2;
 		vertexData[index++] = y2_2;
 
@@ -471,7 +471,7 @@ void SpaceReclaimingIciclePlot::drawQuadrangleByQuadrangleHorizontal(float* vert
 }
 
 // Weight equals the number of subnodes
-float SpaceReclaimingIciclePlot::Weight(const TreeNode c) {
+int SpaceReclaimingIciclePlot::Weight(const TreeNode c) {
 	int totalWeight = 1;
 
 	for (TreeNode n : c.descendant_list) {
@@ -481,12 +481,7 @@ float SpaceReclaimingIciclePlot::Weight(const TreeNode c) {
 	return totalWeight;
 }
 
-/*oid SpaceReclaimingIciclePlot::SRIP1_s_expirimental_init(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
-{
-	cout << "nonononononono!!!!!!!!!!" << endl;
-}*/
-
-float SpaceReclaimingIciclePlot::Weight(const vector<TreeNode*> C) {
+int SpaceReclaimingIciclePlot::Weight(const vector<TreeNode*> C) {
 	int weight = 1;
 	for (TreeNode* n : C) {
 		weight += Weight(*n);
@@ -494,7 +489,7 @@ float SpaceReclaimingIciclePlot::Weight(const vector<TreeNode*> C) {
 	return weight;
 }
 
-float SpaceReclaimingIciclePlot::Weight(const vector<TreeNode> C) {
+int SpaceReclaimingIciclePlot::Weight(const vector<TreeNode> C) {
 	int weight = 1;
 	for (TreeNode n : C) {
 		weight += Weight(n);
@@ -544,7 +539,7 @@ TreeNode* SpaceReclaimingIciclePlot::selectTreeNode(float x, float y)
 // BELOW FOR TESTING PURPOSES!
 
 
-void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector)
+void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, const int multVector)
 {
 	drawQuadrangleByQuadrangleHorizontal(vertexDataArray, index, Point2(0.0f, 0.0f), Point2(arg.W, 0.0f), Point2(arg.W, arg.h), Point2(0.0f, arg.h), multVector);
 
@@ -558,14 +553,14 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick&
 
 }
 
-void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector)
+void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> P, size_t m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, const int multVector)
 {
 	float U = w - (m - 1) * arg.gamma; //total width - number of white spaces size gamma (= (m - 1) * gamma)
 	float x = ((arg.W - w) / 2.0f); // -pOffset;
 	float y = (d + 1.0f) * arg.h;
 
 	float finalOffset = 0.0f;
-	int mpp = 0;
+	size_t mpp = 0;
 
 	float xp = (arg.W - w) / 2.0f;
 
@@ -581,7 +576,7 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 
 			xp += delta + arg.gamma;
 			p0 = p1;
-			int n = c.descendant_list.size();
+			size_t n = c.descendant_list.size();
 			if (n > 0) {
 				mpp += n;
 			}
@@ -594,7 +589,7 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 
 	vector<TreeNode*> Pp;
 	float wp = 0.0f;
-	int mp = 0;
+	size_t mp = 0;
 
 	for (TreeNode* p : P) {
 		Point2 p0 = Point2(p->position.x, p->position.y);
@@ -611,7 +606,7 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 			c.setPosition(Point3(x, y, delta));
 			x += delta + arg.gamma;
 			p0 = p1;
-			int n = c.descendant_list.size();
+			size_t n = c.descendant_list.size();
 			if (n > 0) {
 				Pp.push_back(&c);
 				wp += delta;
@@ -625,7 +620,7 @@ void SpaceReclaimingIciclePlot::SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> 
 	}
 }
 
-void SpaceReclaimingIciclePlot::drawQuadrangleHorizontal(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, int multVector) {
+void SpaceReclaimingIciclePlot::drawQuadrangleHorizontal(float* vertexData, int& index, Point2& p1, Point2& p2, Point2& p3, Point2& p4, const int multVector) {
 	float topWidth = (p3.x - p4.x) / (multVector - 1);
 	float botWidth = (p2.x - p1.x) / (multVector - 1);
 

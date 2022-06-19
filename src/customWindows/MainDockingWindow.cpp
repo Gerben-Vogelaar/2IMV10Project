@@ -1,5 +1,10 @@
 #include "MainDockingWindow.h"
 
+MainDockingWindow::MainDockingWindow()
+{
+    
+}
+
 MainDockingWindow::~MainDockingWindow() {
 	for (InApplicationWindow* subWindow : subWindows) {
 		free(subWindow);
@@ -69,7 +74,7 @@ void MainDockingWindow::renderContent()
         {
             // Disabling fullscreen would allow the window to be moved to the front of other windows,
             // which we can't undo at the moment without finer window depth/z control.
-            ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+            //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
             ImGui::MenuItem("Padding", NULL, &opt_padding);
             ImGui::Separator();
 
@@ -84,7 +89,7 @@ void MainDockingWindow::renderContent()
         ImGui::EndMenuBar();
     }
 
-    renderSubwindows();
+    update();
 
     ImGui::End();
 }
@@ -114,12 +119,110 @@ void MainDockingWindow::newImageWindow(string windowName, std::shared_ptr<Scene>
 	subWindows.push_back(new InApplicationWindowImage(windowName, scene));
 }
 
-void MainDockingWindow::renderSubwindows()
+void MainDockingWindow::newImageWindowGraph(string windowName)
 {
+    //TODO: should retrieve args from the settings window
+
+    std::ifstream ifile;
+    ifile.open("./resources/newickTrees/life.txt");
+
+    std::stringstream buf;
+    buf << ifile.rdbuf();
+    string as(buf.str());
+    Newick newick = Newick(as);
+    newick.printStatistics();
+
+    SRIP1_arg args1;
+    args1.setGamma(0.025f);
+    args1.seth(0.25f);
+    args1.setRho(0.8f);
+    args1.setW(2.0f);
+
+    SRIP2_arg args2;
+    args2.setGamma(0.1f);
+    args2.seth(0.085f);
+    args2.setRho(0.1f);
+    args2.setW(2.0f);
+    args2.setEpsilon(2.0f);
+    args2.setSigma(1.0f);
+    args2.setLambda(30);
+
+    SpaceReclaimingIciclePlot* plot = new SpaceReclaimingIciclePlot(newick, args1, false, 50);
+
+    std::shared_ptr<Shader> shader2 = std::make_shared<Shader>(Shader("resources/shaderFiles/shader_imGUIGraph.vs", "resources/shaderFiles/shader_imGUIGraph.fs"));
+    std::shared_ptr<Scene> scene = std::make_shared<Scene>(Scene(shader2, plot->getVertexDataArraySize() * sizeof(float), plot->getVertexDataArray(), plot->getVertexDataArraySize(),
+        1600, 900, 2, true));
+
+    newImageWindow("New name", scene);
+}
+
+string MainDockingWindow::generateName(string windowName, int count)
+{
+    string countString = std::to_string(count);
+
+    if (count == 0) {
+        countString = "";
+    }
+
+    size_t lastindex = windowName.find_last_of(".");
+    string rawname = windowName.substr(0, lastindex);
+    string extension = windowName.substr(lastindex, windowName.length());
+    string currentName = rawname + countString + extension;
+
+    for (InApplicationWindow* win : subWindows) {
+        if (win->getWindowName().compare(currentName) == 0) {
+            return generateName(windowName, count + 1);
+        }
+    }
+
+    return currentName;
+}
+
+void MainDockingWindow::newImageWindowGraph2(std::filesystem::path filePath, SRIP_args arg) {
+    std::ifstream ifile;
+    ifile.open(filePath);
+    std::stringstream buf;
+    buf << ifile.rdbuf();
+    string as(buf.str());
+    Newick newick = Newick(as);
+    newick.printStatistics();
+   
+    std::shared_ptr<Shader> shader2 = std::make_shared<Shader>(Shader("resources/shaderFiles/shader_imGUIGraph.vs", "resources/shaderFiles/shader_imGUIGraph.fs"));
+    std::shared_ptr<Scene> scene;
+
+    if (arg.algo == AlgorithmType::SRIP1) {
+        SpaceReclaimingIciclePlot* plot = new SpaceReclaimingIciclePlot(newick, arg.getSRIP1arg(), false, 50);
+        scene = std::make_shared<Scene>(Scene(shader2, plot->getVertexDataArraySize() * sizeof(float), plot->getVertexDataArray(), plot->getVertexDataArraySize(),
+            1600, 900, 2, true));
+    } else if (arg.algo == AlgorithmType::SRIP2) {
+        SpaceReclaimingIciclePlot* plot = new SpaceReclaimingIciclePlot(newick, arg.getSRIP2arg(), false, 50);
+        scene = std::make_shared<Scene>(Scene(shader2, plot->getVertexDataArraySize() * sizeof(float), plot->getVertexDataArray(), plot->getVertexDataArraySize(),
+            1600, 900, 2, true));
+    }
+
+    string graphWindowName = generateName(filePath.filename().string(), 0);
+
+    newImageWindow(graphWindowName, scene);
+}
+
+void MainDockingWindow::pollSubwindows()
+{
+    if (settingsWindow.get()->pollNewWindowCommand()) {
+ 
+        SRIP_args args = settingsWindow.get()->getSRIP_args();
+        
+        newImageWindowGraph2(std::filesystem::path("./resources/newickTrees/life.txt"), args);
+    }
+}
+
+void MainDockingWindow::update()
+{
+    pollSubwindows();
+
+    settingsWindow.get()->render();
+
     for (InApplicationWindow* window : subWindows) {
         window->update();
         window->render();
     }
-
-    
 }

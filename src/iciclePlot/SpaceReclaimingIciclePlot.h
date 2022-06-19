@@ -49,11 +49,11 @@ private:
 	//algorithms below are actually used in the code :
 	//quadrangle Draw ----------------------------
 
-	void SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, int multVector);
+	void SRIP1_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, const int multVector);
+	void SRIP1_rQ_h(int d, vector<TreeNode*> P, size_t m, float w, SRIP1_arg arg, float* vertexData, int& index, const int multVector);
 
-	void SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> P, int m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, int multVector);
+	void SRIP1Expirimental_initQ_h(SRIP1_arg arg, Newick& tree, float* vertexData, int& index, const int multVector);
+	void SRIP1Expirimental_rQ_h(int d, vector<TreeNode*> P, size_t m, float w, SRIP1_arg arg, float* vertexData, int& index, float pOffset, const int multVector);
 
 	void displaceQuadranglesX(const float x, float* vertexData, int sizeVertexData);
 	void displaceQuadranglesY(const float y, float* vertexData, int sizeVertexData);
@@ -62,12 +62,12 @@ private:
 	/*void SRIP2_init(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
 	void SRIP2_r(int d, vector<TreeNode> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);*/
 
-	void SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, int multVector);
-	void SRIP2_rQ_h(int d, vector<TreeNode*> P, int m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, int multVector);
+	void SRIP2_initQ_h(SRIP2_arg arg, Newick& tree, float* vertexData, int& index, const int multVector);
+	void SRIP2_rQ_h(int d, vector<TreeNode*> P, size_t m, float A, float w, float g, SRIP2_arg arg, float* vertexData, int& index, const int multVector);
 
-	float Weight(const vector<TreeNode> C);
-	float Weight(const vector<TreeNode*> C);
-	float Weight(const TreeNode c);
+	int Weight(const vector<TreeNode*> C);
+	int Weight(const vector<TreeNode> C);
+	int Weight(const TreeNode c);
 
 	/* Drawing quadrangles multiple functions
 	* Triangle generates 2 triangles (6 floats in vertexData)
@@ -79,8 +79,8 @@ private:
 	*
 	*/
 	void drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4);
-	void drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector);
+	void drawQuadrangleByTriangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, const int multVector);
 	void drawQuadrangleByQuadrangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4);
 	void drawQuadrangleByQuadrangle(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector);
-	void drawQuadrangleByQuadrangleHorizontal(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, int multVector);
+	void drawQuadrangleByQuadrangleHorizontal(float* vertexData, int& index, Point2 p1, Point2 p2, Point2 p3, Point2 p4, const int multVector);
 };

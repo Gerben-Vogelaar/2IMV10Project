@@ -373,6 +373,8 @@
     <ClInclude Include="src\SceneUtils\SceneIciclePlot.h" />
     <ClInclude Include="src\customWindows\WindowCamera.h" />
     <ClInclude Include="src\SceneUtils\SceneCamera.h" />
+    <ClInclude Include="src\customWindows\SettingsWindow.h" />
+    <ClInclude Include="src\customWindows\MainDockingWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\GLEW\doc\advanced.html" />
@@ -554,8 +556,9 @@
     <ClCompile Include="src\SceneUtils\SceneIciclePlot.cpp" />
     <ClCompile Include="src\customWindows\WindowCamera.cpp" />
     <ClCompile Include="src\customWindows\MainDockingWindow.cpp" />
-    <ClCompile Include="src\customWindows\MainDockingWindow.h" />
     <ClCompile Include="src\SceneUtils\SceneCamera.cpp" />
+    <ClCompile Include="src\customWindows\SettingsWindow.cpp" />
+    <ClCompile Include="src\iciclePlot\SRIParg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Dependencies\imgui\README.txt" />

@@ -20,6 +20,11 @@ string InApplicationWindow::getWindowName()
 	return this->windowName;
 }
 
+bool* InApplicationWindow::getRunning()
+{
+	return &running;
+}
+
 glm::vec2 InApplicationWindow::getDimensions()
 {
 	return glm::vec2(width, height);
